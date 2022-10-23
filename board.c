@@ -57,3 +57,21 @@ void mapDestroy(boardData *map) {
     free(map->map);
     free(map);
 }
+
+void serverInfoPrint(int y, int x, WINDOW *window)
+{
+    mvwprintw(window, y++, x, "Server's PID: %d", 666);
+    mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", 0, 0);
+    mvwprintw(window, y++, x + 1, "Round number: %d", 0);
+
+    mvwprintw(window, y++, x, "Parameter:   ");
+    mvwprintw(window, y++, x + 1, "PID:          ");
+    mvwprintw(window, y++, x + 1, "Type:         ");
+    mvwprintw(window, y++, x + 1, "Curr X/Y:     ");
+    mvwprintw(window, y++, x + 1, "Deaths:       ");
+    y++;
+    mvwprintw(window, y++, x, "Coins        ");
+    mvwprintw(window, y++, x + 1, "carried       ");
+    mvwprintw(window, y++, x + 1, "brought       ");
+    y -= 9;
+}

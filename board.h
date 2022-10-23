@@ -49,5 +49,6 @@ void mapDestroy(boardData *map);
 
 void mapPrint(int y, int x, WINDOW *window, boardData *map);
 
+void serverInfoPrint(int y, int x, WINDOW *window);
 
 #endif //SO2_BOARD_H
