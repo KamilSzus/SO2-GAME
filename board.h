@@ -31,11 +31,15 @@
 #define SO2_BOARD_H
 
 
+#include <curses.h>
+#include <ncurses.h>
+#include <malloc.h>
+
 typedef struct {
-    char **map;
+    char *map;
     int campLocationX;
     int campLocationY;
-    int wight;
+    int width;
     int height;
 } boardData;
 
@@ -43,6 +47,7 @@ boardData *mapLoad(char *filename);
 
 void mapDestroy(boardData *map);
 
-boardData *mapInit(int wight, int height);
+void mapPrint(int y, int x, WINDOW *window, boardData *map);
+
 
 #endif //SO2_BOARD_H

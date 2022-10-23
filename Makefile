@@ -123,6 +123,33 @@ SO2/fast:
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/build
 .PHONY : SO2/fast
 
+board.o: board.c.o
+
+.PHONY : board.o
+
+# target to build an object file
+board.c.o:
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.o
+.PHONY : board.c.o
+
+board.i: board.c.i
+
+.PHONY : board.i
+
+# target to preprocess a source file
+board.c.i:
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.i
+.PHONY : board.c.i
+
+board.s: board.c.s
+
+.PHONY : board.s
+
+# target to generate assembly for a file
+board.c.s:
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.s
+.PHONY : board.c.s
+
 main.o: main.c.o
 
 .PHONY : main.o
@@ -159,6 +186,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... SO2"
+	@echo "... board.o"
+	@echo "... board.i"
+	@echo "... board.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
