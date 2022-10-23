@@ -1,7 +1,23 @@
-#include <stdio.h>
-
-
+#include <string.h>
 #include "board.h"
+
+void maintain_server_info_print(int y, int x, WINDOW *window)
+{
+    mvwprintw(window, y++, x, "Server's PID: %d", 666);
+    mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", 0, 0);
+    mvwprintw(window, y++, x + 1, "Round number: %d", 0);
+
+    mvwprintw(window, y++, x, "Parameter:   ");
+    mvwprintw(window, y++, x + 1, "PID:          ");
+    mvwprintw(window, y++, x + 1, "Type:         ");
+    mvwprintw(window, y++, x + 1, "Curr X/Y:     ");
+    mvwprintw(window, y++, x + 1, "Deaths:       ");
+    y++;
+    mvwprintw(window, y++, x, "Coins        ");
+    mvwprintw(window, y++, x + 1, "carried       ");
+    mvwprintw(window, y++, x + 1, "brought       ");
+    y -= 9;
+}
 
 int main() {
 
@@ -27,7 +43,8 @@ int main() {
     wrefresh(okno2);
 
     mapPrint(5, 5, okno1, map);
-
+    maintain_server_info_print(5,55, okno1);
+    wrefresh(okno1);
     do {
         znak = wgetch(okno1);        // Oczekiwanie na klawisz
         mvwprintw(okno2, 2, 1, "Nacisnale: %c", znak);
