@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/kamil/Desktop/nauka/semestr 7/SO2/board.h
+
+/mnt/c/Users/kamil/Desktop/nauka/semestr 7/SO2/main.c
+stdio.h
+-
+ncurses.h
+-
+curses.h
+-
+malloc.h
+-
+board.h
+/mnt/c/Users/kamil/Desktop/nauka/semestr 7/SO2/board.h
+

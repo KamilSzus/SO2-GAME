@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CLionExternalBuildManager">
+    <target id="d2503e1a-5122-44d2-92e5-ee1db4ebb22e" name="WSL" defaultType="TOOL">
+      <configuration id="cd743287-9303-4d92-aee4-e99503af598e" name="WSL" toolchainName="WSL" />
+    </target>
+  </component>
+</project>
