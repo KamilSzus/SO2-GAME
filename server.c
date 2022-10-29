@@ -5,17 +5,80 @@
 #include <locale.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <bits/fcntl-linux.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include "server.h"
-#include "board.h"
 
-void serverInit(infoServer *server) {
+void serverJoinPlayer(infoServer *pServer, sharedMemoryJoin *pJoin);
+
+infoServer* serverInit() {
+
+    infoServer *server = (infoServer *) calloc(1, sizeof(infoServer));
+    if (server == NULL) {
+        return NULL;
+    }
+    server->board = mapLoad("map.txt");
+
+    //pthread_mutexattr_t joinThread;
+    //pthread_mutexattr_init(&joinThread);
+    //pthread_mutexattr_settype(&joinThread, PTHREAD_MUTEX_RECURSIVE);
+    //pthread_mutex_init(&server->mutex, &joinThread);
+
+    sem_t* sem = sem_open("/gameSO2_Join", O_CREAT, 0600, 0);
+    if(sem==SEM_FAILED){
+        mapDestroy(server->board);
+        return NULL;
+    }
+
+    server->sharedMemoryJoin->fd = shm_open("/gameSO2", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    server->sharedMemoryJoin = (struct sharedMemoryJoin*)mmap(NULL, sizeof(struct sharedMemoryJoin), PROT_READ | PROT_WRITE, MAP_SHARED, server->sharedMemoryJoin->fd, 0);
+
+    sharedMemoryJoin *request = (sharedMemoryJoin *) server->sharedMemoryJoin;
+    sem_init(&request->server_open_request, 1, 0);
+    sem_init(&request->server_new_request, 1, 0);
+    sem_init(&request->server_checked_request, 1, 0);
+
+    serverJoinPlayer(server,request);
+
+    //dodac timer
+    return server;
+}
+
+void serverJoinPlayer(infoServer *pServer, sharedMemoryJoin *pJoin) {
+
+    while (pJoin->isSharedMemoryRunning)
+    {
+        //request->join_status = JOIN_UNKNOWN;
+
+        sem_post(&pJoin->server_open_request);
+        sem_wait(&pJoin->server_new_request);
+
+        if (pJoin->isSharedMemoryRunning == false)
+            break;
+
+        pthread_mutex_lock(&pServer->mutex);
+
+        //int test = server_entity_add(server, request);
+        //if (test)
+        //    request->join_status = JOIN_REJECTED;
+        //else
+        //    request->join_status = JOIN_ACCEPTED;
+
+        sem_post(&pJoin->server_checked_request);
+        sem_wait(&pJoin->server_new_request);
+
+        pthread_mutex_unlock(&pServer->mutex);
+    }
+
+    pJoin->isSharedMemoryRunning = false;
+
+}
+
+void serverRun(infoServer *server){
     setlocale(LC_ALL, "");
-
-    boardData *map = mapLoad("map.txt");
-
     WINDOW *okno1, *okno2;    // Okna programu
     int znak;
-
 
     initscr();    // Rozpoczecie pracy z biblioteka CURSES
     curs_set(0);    // Nie wyswietlaj kursora
@@ -32,12 +95,8 @@ void serverInit(infoServer *server) {
     mvwprintw(okno2, 1, 1, "%s", "Okno nr 2");
     wrefresh(okno2);
 
-    //pthread_t stdinController;
-    // pthread_create(&stdinController, NULL, maintain_stdin_controller, NULL);
-
-
     do {
-        mapPrint(5, 5, okno1, map);
+        mapPrint(5, 5, okno1, server->board);
         serverInfoPrint(5, 55, okno1);
         wrefresh(okno1);
 
@@ -49,7 +108,7 @@ void serverInit(infoServer *server) {
 
     //while (1) {
     //    //sem_wait(&server->update);
-//
+    //
     //    // werase(map);
     //    // maintain_map_print(0, 0, map, server->map);
     //    // maintain_map_print(0, 0, map, server->map_entities);
@@ -58,17 +117,17 @@ void serverInit(infoServer *server) {
     //    // werase(info);
     //    // maintain_server_info_print(0, 0, info, server);
     //    // wrefresh(info);
-//
-//
-//
+    //
+    //
+    //
     //    //server_entity_thread_function(server);
-//
+    //
     //    if (pthread_tryjoin_np(stdinController, (void *) &pressed_key) == 0) {
     //        char *decoded = (char *) pressed_key;
     //        mvwprintw(okno2, 0, 0, "Button pressed: %02x %02x %02x %02x", decoded[0], decoded[1], decoded[2],
     //                  decoded[3]);
     //        wrefresh(okno2);
-//
+    //
     //        if (*pressed_key == 'q' || *pressed_key == 'Q') {
     //            free(pressed_key);
     //            break;
@@ -82,24 +141,59 @@ void serverInit(infoServer *server) {
     //                        beast[i] = entity_beast_add();
     //                        break;
     //                    }
-//
+    //
     //                }
     //            }
     //        } else {
     //            maintain_map_add_symbol(server->map, *pressed_key);
     //        }
-//
-//
+    //
+    //
     //        free(pressed_key);
-//
+    //
     //       // pthread_create(&stdinController, NULL, maintain_stdin_controller, NULL);
     //    }
-//
+    //
     //}
 
 
     endwin();// Koniec pracy z CURSES
     delwin(okno1);        // Usuniecie okien
     delwin(okno2);
-    mapDestroy(map);
+    mapDestroy(server->board);
+}
+
+void *server_join_requests_thread_function(void *arg)
+{
+    ServerInfo *server = (ServerInfo *) arg;
+    SHMController *controller = &server->join_request;
+    JoinRequest *request = (JoinRequest *) controller->memory_map;
+
+    while (controller->is_thread_running)
+    {
+        request->join_status = JOIN_UNKNOWN;
+
+        sem_post(&request->server_open_request);
+        sem_wait(&request->server_new_request);
+
+        if (controller->is_thread_running == false)
+            break;
+
+        pthread_mutex_lock(&server->mutex);
+
+        int test = server_entity_add(server, request);
+        if (test)
+            request->join_status = JOIN_REJECTED;
+        else
+            request->join_status = JOIN_ACCEPTED;
+
+        sem_post(&request->server_checked_request);
+        sem_wait(&request->server_new_request);
+
+        pthread_mutex_unlock(&server->mutex);
+    }
+
+    controller->is_thread_running = false;
+
+    return NULL;
 }

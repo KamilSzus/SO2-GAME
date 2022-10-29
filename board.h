@@ -34,6 +34,8 @@
 #include <curses.h>
 #include <ncurses.h>
 #include <malloc.h>
+#include <sys/types.h>
+#include <bits/semaphore.h>
 
 typedef struct {
     char *map;
@@ -42,6 +44,8 @@ typedef struct {
     int width;
     int height;
 } boardData;
+
+
 
 boardData *mapLoad(char *filename);
 

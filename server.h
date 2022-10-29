@@ -5,36 +5,46 @@
 #ifndef SO2_SERVER_H
 #define SO2_SERVER_H
 
-//#include <sys/types.h>
-//#include <bits/semaphore.h>
+#include <sys/types.h>
+#include <bits/semaphore.h>
 #include <curses.h>
 #include <ncurses.h>
 #include <malloc.h>
+#include "board.h"
 
-//typedef struct player_info {
-//    sem_t received_data;
-//    sem_t map_calculated;
-//    int is_connected;
-//    int round_number;
-//    int bush_timer;
-//    int ID;
-//    pid_t PID;
-//    pid_t server_PID;
-//    int type;
-//    int deaths;
-//    int coins_found;
-//    int coins_brought;
-//    int move;
-//} player;
+typedef struct sharedMemoryJoin {
+    int fd;
+    pid_t server_PID;
+    pid_t player_pid;
+    bool isBot;
+    //JoinStatus join_status;
+    int player_number;
+    sem_t server_open_request;
+    sem_t server_new_request;
+    sem_t server_checked_request;
+    pthread_t sharedMemoryThread;
+    bool isSharedMemoryRunning;
+
+
+} sharedMemoryJoin;
 
 typedef struct infoServer {
     //player* players;
-    int campsite_xy;
-    //pid_t server_PID;
-    int player_count;
-    int round_number;
+    pid_t server_PID;//id prorocesu
+    boardData *board;
+    pthread_mutex_t mutex;
+    sharedMemoryJoin *sharedMemoryJoin;
+
+
 } infoServer;
 
-void serverInit(infoServer *server);
+
+infoServer *serverInit();
+
+void serverRun(infoServer *server);
+
+int createFifoFile(char *path);
+
+int createFifoPath(char *dest, int id, char *type);
 
 #endif //SO2_SERVER_H

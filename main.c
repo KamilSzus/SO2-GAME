@@ -5,7 +5,7 @@
 
 int main() {
 
-    serverInit(NULL);
+    serverRun(NULL);
 
     return 0;
 }
