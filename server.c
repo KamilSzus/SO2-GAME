@@ -2,80 +2,82 @@
 // Created by kamil on 23.10.2022.
 //
 
-#include <locale.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <bits/fcntl-linux.h>
-#include <sys/mman.h>
-#include <unistd.h>
+#include <strings.h>
 #include "server.h"
 
-void serverJoinPlayer(infoServer *pServer, sharedMemoryJoin *pJoin);
+void serverJoinPlayer(infoServer *pServer, userJoin *pJoin);
 
-infoServer* serverInit() {
+infoServer *serverInit() {
 
     infoServer *server = (infoServer *) calloc(1, sizeof(infoServer));
     if (server == NULL) {
         return NULL;
     }
-    server->board = mapLoad("map.txt");
 
-    //pthread_mutexattr_t joinThread;
-    //pthread_mutexattr_init(&joinThread);
-    //pthread_mutexattr_settype(&joinThread, PTHREAD_MUTEX_RECURSIVE);
-    //pthread_mutex_init(&server->mutex, &joinThread);
-
-    sem_t* sem = sem_open("/gameSO2_Join", O_CREAT, 0600, 0);
+    sem_t* sem = sem_open("/gameSO2_Join_Signal", O_CREAT, 0600, 0);
     if(sem==SEM_FAILED){
-        mapDestroy(server->board);
         return NULL;
     }
 
-    server->sharedMemoryJoin->fd = shm_open("/gameSO2", O_CREAT | O_RDWR, 0600); //zwraca id shm
-    server->sharedMemoryJoin = (struct sharedMemoryJoin*)mmap(NULL, sizeof(struct sharedMemoryJoin), PROT_READ | PROT_WRITE, MAP_SHARED, server->sharedMemoryJoin->fd, 0);
+    server->board = mapLoad("map.txt");
+    server->server_PID = getpid();
+    //sem_init(&server->update, 0, 1);
 
-    sharedMemoryJoin *request = (sharedMemoryJoin *) server->sharedMemoryJoin;
-    sem_init(&request->server_open_request, 1, 0);
-    sem_init(&request->server_new_request, 1, 0);
-    sem_init(&request->server_checked_request, 1, 0);
+    server->sharedMemoryJoin.fd = shm_open("/gameSO2_Join_SHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    ftruncate(server->sharedMemoryJoin.fd, sizeof(userJoin));
+    server->sharedMemoryJoin.userJoin = (struct userJoin *) mmap(NULL, sizeof(struct userJoin), PROT_READ | PROT_WRITE,
+                                                                 MAP_SHARED, server->sharedMemoryJoin.fd, 0);
 
-    serverJoinPlayer(server,request);
+    userJoin *request = (struct userJoin *) server->sharedMemoryJoin.userJoin;
+    request->board = server->board;
+    sem_init(&request->server_open_request, 1, 1);
+
+    int terminate = 0, counter = 0;
+    while (!terminate) {
+        sem_wait(sem);
+        sem_wait(&request->server_open_request);
+        printf("[%03d:%03d]: %s\n", server->server_PID, request->player_pid, request->payload);
+        terminate = strcasecmp(request->payload, "quit") == 0;
+        sem_post(&request->server_open_request);
+    }
+
+    //serverJoinPlayer(server, request);
 
     //dodac timer
     return server;
 }
 
-void serverJoinPlayer(infoServer *pServer, sharedMemoryJoin *pJoin) {
+void serverJoinPlayer(infoServer *pServer, userJoin *pJoin) {
 
-    while (pJoin->isSharedMemoryRunning)
-    {
-        //request->join_status = JOIN_UNKNOWN;
-
-        sem_post(&pJoin->server_open_request);
-        sem_wait(&pJoin->server_new_request);
-
-        if (pJoin->isSharedMemoryRunning == false)
-            break;
-
-        pthread_mutex_lock(&pServer->mutex);
-
-        //int test = server_entity_add(server, request);
-        //if (test)
-        //    request->join_status = JOIN_REJECTED;
-        //else
-        //    request->join_status = JOIN_ACCEPTED;
-
-        sem_post(&pJoin->server_checked_request);
-        sem_wait(&pJoin->server_new_request);
-
-        pthread_mutex_unlock(&pServer->mutex);
-    }
-
-    pJoin->isSharedMemoryRunning = false;
+    //while (pJoin->isSharedMemoryRunning)
+    //{
+    //    //request->join_status = JOIN_UNKNOWN;
+//
+    //    sem_post(&pJoin->server_open_request);
+    //    sem_wait(&pJoin->server_new_request);
+//
+    //    if (pJoin->isSharedMemoryRunning == false)
+    //        break;
+//
+    //    pthread_mutex_lock(&pServer->mutex);
+//
+    //    //int test = server_entity_add(server, request);
+    //    //if (test)
+    //    //    request->join_status = JOIN_REJECTED;
+    //    //else
+    //    //    request->join_status = JOIN_ACCEPTED;
+//
+    //    sem_post(&pJoin->server_checked_request);
+    //    sem_wait(&pJoin->server_new_request);
+//
+    //    pthread_mutex_unlock(&pServer->mutex);
+    //}
+//
+    //pJoin->isSharedMemoryRunning = false;
 
 }
 
-void serverRun(infoServer *server){
+void serverRun(infoServer *server) {
     setlocale(LC_ALL, "");
     WINDOW *okno1, *okno2;    // Okna programu
     int znak;
@@ -163,37 +165,37 @@ void serverRun(infoServer *server){
     mapDestroy(server->board);
 }
 
-void *server_join_requests_thread_function(void *arg)
-{
-    ServerInfo *server = (ServerInfo *) arg;
-    SHMController *controller = &server->join_request;
-    JoinRequest *request = (JoinRequest *) controller->memory_map;
-
-    while (controller->is_thread_running)
-    {
-        request->join_status = JOIN_UNKNOWN;
-
-        sem_post(&request->server_open_request);
-        sem_wait(&request->server_new_request);
-
-        if (controller->is_thread_running == false)
-            break;
-
-        pthread_mutex_lock(&server->mutex);
-
-        int test = server_entity_add(server, request);
-        if (test)
-            request->join_status = JOIN_REJECTED;
-        else
-            request->join_status = JOIN_ACCEPTED;
-
-        sem_post(&request->server_checked_request);
-        sem_wait(&request->server_new_request);
-
-        pthread_mutex_unlock(&server->mutex);
-    }
-
-    controller->is_thread_running = false;
-
-    return NULL;
-}
+//void *server_join_requests_thread_function(void *arg)
+//{
+//    ServerInfo *server = (ServerInfo *) arg;
+//    SHMController *controller = &server->join_request;
+//    JoinRequest *request = (JoinRequest *) controller->memory_map;
+//
+//    while (controller->is_thread_running)
+//    {
+//        request->join_status = JOIN_UNKNOWN;
+//
+//        sem_post(&request->server_open_request);
+//        sem_wait(&request->server_new_request);
+//
+//        if (controller->is_thread_running == false)
+//            break;
+//
+//        pthread_mutex_lock(&server->mutex);
+//
+//        int test = server_entity_add(server, request);
+//        if (test)
+//            request->join_status = JOIN_REJECTED;
+//        else
+//            request->join_status = JOIN_ACCEPTED;
+//
+//        sem_post(&request->server_checked_request);
+//        sem_wait(&request->server_new_request);
+//
+//        pthread_mutex_unlock(&server->mutex);
+//    }
+//
+//    controller->is_thread_running = false;
+//
+//    return NULL;
+//}

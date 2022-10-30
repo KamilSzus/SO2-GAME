@@ -35,7 +35,7 @@
 #include <ncurses.h>
 #include <malloc.h>
 #include <sys/types.h>
-#include <bits/semaphore.h>
+#include <semaphore.h>
 
 typedef struct {
     char *map;

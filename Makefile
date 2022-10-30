@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named SO2Client
+
+# Build rule for target.
+SO2Client: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 SO2Client
+.PHONY : SO2Client
+
+# fast build rule for target.
+SO2Client/fast:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/build
+.PHONY : SO2Client/fast
+
+#=============================================================================
 # Target rules for targets named SO2
 
 # Build rule for target.
@@ -129,6 +142,7 @@ board.o: board.c.o
 
 # target to build an object file
 board.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/board.c.o
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.o
 .PHONY : board.c.o
 
@@ -138,6 +152,7 @@ board.i: board.c.i
 
 # target to preprocess a source file
 board.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/board.c.i
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.i
 .PHONY : board.c.i
 
@@ -147,8 +162,66 @@ board.s: board.c.s
 
 # target to generate assembly for a file
 board.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/board.c.s
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.s
 .PHONY : board.c.s
+
+client.o: client.c.o
+
+.PHONY : client.o
+
+# target to build an object file
+client.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/client.c.o
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/client.c.o
+.PHONY : client.c.o
+
+client.i: client.c.i
+
+.PHONY : client.i
+
+# target to preprocess a source file
+client.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/client.c.i
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/client.c.i
+.PHONY : client.c.i
+
+client.s: client.c.s
+
+.PHONY : client.s
+
+# target to generate assembly for a file
+client.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/client.c.s
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/client.c.s
+.PHONY : client.c.s
+
+clientMain.o: clientMain.c.o
+
+.PHONY : clientMain.o
+
+# target to build an object file
+clientMain.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/clientMain.c.o
+.PHONY : clientMain.c.o
+
+clientMain.i: clientMain.c.i
+
+.PHONY : clientMain.i
+
+# target to preprocess a source file
+clientMain.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/clientMain.c.i
+.PHONY : clientMain.c.i
+
+clientMain.s: clientMain.c.s
+
+.PHONY : clientMain.s
+
+# target to generate assembly for a file
+clientMain.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/clientMain.c.s
+.PHONY : clientMain.c.s
 
 main.o: main.c.o
 
@@ -183,6 +256,7 @@ server.o: server.c.o
 
 # target to build an object file
 server.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/server.c.o
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/server.c.o
 .PHONY : server.c.o
 
@@ -192,6 +266,7 @@ server.i: server.c.i
 
 # target to preprocess a source file
 server.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/server.c.i
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/server.c.i
 .PHONY : server.c.i
 
@@ -201,6 +276,7 @@ server.s: server.c.s
 
 # target to generate assembly for a file
 server.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/server.c.s
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/server.c.s
 .PHONY : server.c.s
 
@@ -212,10 +288,17 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... SO2Client"
 	@echo "... SO2"
 	@echo "... board.o"
 	@echo "... board.i"
 	@echo "... board.s"
+	@echo "... client.o"
+	@echo "... client.i"
+	@echo "... client.s"
+	@echo "... clientMain.o"
+	@echo "... clientMain.i"
+	@echo "... clientMain.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
