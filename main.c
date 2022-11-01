@@ -5,7 +5,7 @@
 
 int main() {
     infoServer* server = serverInit();
-    //serverRun(server);
+    serverRun(server);
 
 
     munmap(server->sharedMemoryJoin.userJoin, sizeof(struct userJoin));

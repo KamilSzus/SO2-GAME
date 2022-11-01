@@ -18,8 +18,8 @@ infoServer *serverInit() {
         return NULL;
     }
 
-    sem_t* sem = sem_open("/gameSO2_Join_Signal", O_CREAT, 0600, 0);
-    if(sem==SEM_FAILED){
+    sem_t *sem = sem_open("/gameSO2_Join_Signal", O_CREAT, 0600, 0);
+    if (sem == SEM_FAILED) {
         return NULL;
     }
 
@@ -28,30 +28,30 @@ infoServer *serverInit() {
     server->playersNumber = 0;
     sem_init(&server->update, 0, 1);
 
-    server->sharedMemoryJoin.fd = shm_open("/gameSO2_Join_SHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
-    ftruncate(server->sharedMemoryJoin.fd, sizeof(userJoin));
-    server->sharedMemoryJoin.userJoin = (struct userJoin *) mmap(NULL, sizeof(struct userJoin), PROT_READ | PROT_WRITE,
-                                                                 MAP_SHARED, server->sharedMemoryJoin.fd, 0);
-
-    userJoin *request = (struct userJoin *) server->sharedMemoryJoin.userJoin;
-    sem_init(&request->server_open_request, 1, 1);
-
-    player players[4];
-    pthread_t player_thr[4];
-
-    for (int i = 0; i < 4; i++) {
-        players[i] = initPlayer(i, server->board,server->server_PID);
-        //pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
-    }
-
-    int terminate = 0, counter = 0;
-    while (!terminate) {
-        sem_wait(sem);
-        sem_wait(&request->server_open_request);
-        printf("[%03d:%03d]: %s\n", server->server_PID, request->player_pid, request->payload);
-        terminate = strcasecmp(request->payload, "quit") == 0;
-        sem_post(&request->server_open_request);
-    }
+    //server->sharedMemoryJoin.fd = shm_open("/gameSO2_Join_SHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    //ftruncate(server->sharedMemoryJoin.fd, sizeof(userJoin));
+    //server->sharedMemoryJoin.userJoin = (struct userJoin *) mmap(NULL, sizeof(struct userJoin), PROT_READ | PROT_WRITE,
+    //                                                             MAP_SHARED, server->sharedMemoryJoin.fd, 0);
+//
+    //userJoin *request = (struct userJoin *) server->sharedMemoryJoin.userJoin;
+    //sem_init(&request->server_open_request, 1, 1);
+//
+    //player players[4];
+    //pthread_t player_thr[4];
+//
+    //for (int i = 0; i < 4; i++) {
+    //    players[i] = initPlayer(i, server->board, server->server_PID);
+    //    //pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
+    //}
+//
+    //int terminate = 0, counter = 0;
+    //while (!terminate) {
+    //    sem_wait(sem);
+    //    sem_wait(&request->server_open_request);
+    //    printf("[%03d:%03d]: %s\n", server->server_PID, request->player_pid, request->payload);
+    //    terminate = strcasecmp(request->payload, "quit") == 0;
+    //    sem_post(&request->server_open_request);
+    //}
 
     return server;
 }
@@ -80,11 +80,27 @@ void serverRun(infoServer *server) {
         mapPrint(5, 5, okno1, server->board);
         serverInfoPrint(5, 55, okno1);
         wrefresh(okno1);
-
         znak = wgetch(okno1);        // Oczekiwanie na klawisz
+
+        if (znak == 'c') {
+            generateRandomCoin(server->board);
+            mapPrint(5, 5, okno1, server->board);
+            wrefresh(okno1);
+        } else if (znak == 't') {
+            generateRandomTreasure(server->board);
+            mapPrint(5, 5, okno1, server->board);
+            wrefresh(okno1);
+        } else if (znak == 'T') {
+            generateRandomLargeTreasure(server->board);
+            mapPrint(5, 5, okno1, server->board);
+            wrefresh(okno1);
+        }else if(znak == 'B' || znak == 'b'){
+
+        }
+
         mvwprintw(okno2, 2, 1, "Nacisnale: %c", znak);
         wrefresh(okno2);
-    } while (znak == 'q' || znak == 'Q');
+    } while (znak != 'q');
 
 
     //while (1) {

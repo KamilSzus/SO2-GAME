@@ -1,7 +1,9 @@
 //
 // Created by kamil on 23.10.2022.
 //
+#include <stdlib.h>
 #include "../headers/board.h"
+#include "../headers/point.h"
 
 boardData *mapLoad(char *filename) {
     FILE *file = fopen(filename, "r");
@@ -58,8 +60,7 @@ void mapDestroy(boardData *map) {
     free(map);
 }
 
-void serverInfoPrint(int y, int x, WINDOW *window)
-{
+void serverInfoPrint(int y, int x, WINDOW *window) {
     mvwprintw(window, y++, x, "Server's PID: %d", 666);
     mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", 0, 0);
     mvwprintw(window, y++, x + 1, "Round number: %d", 0);
@@ -74,4 +75,60 @@ void serverInfoPrint(int y, int x, WINDOW *window)
     mvwprintw(window, y++, x + 1, "carried       ");
     mvwprintw(window, y++, x + 1, "brought       ");
     y -= 9;
+}
+
+void generateRandomCoin(boardData *map) {
+    if (!map) {
+        return;
+    }
+
+    point spawn;
+    //sprawdzic czy player pojawi sie na innym
+    while (1) {
+        spawn.x = rand() % (map->width - 1) + 1;
+        spawn.y = rand() % (map->height - 1) + 1;
+        //*(map->map + i * map->width + j)
+        if (*(map->map + spawn.y * map->width + spawn.x) == ' ') {
+            *(map->map + spawn.y * map->width + spawn.x) = 'c';
+            break;
+        }
+    }
+
+}
+
+void generateRandomTreasure(boardData *map) {
+    if (!map) {
+        return;
+    }
+
+    point spawn;
+    //sprawdzic czy player pojawi sie na innym
+    while (1) {
+        spawn.x = rand() % (map->width - 1) + 1;
+        spawn.y = rand() % (map->height - 1) + 1;
+        //*(map->map + i * map->width + j)
+        if (*(map->map + spawn.y * map->width + spawn.x) == ' ') {
+            *(map->map + spawn.y * map->width + spawn.x) = 't';
+            break;
+        }
+    }
+
+}
+
+void generateRandomLargeTreasure(boardData *map) {
+    if (!map) {
+        return;
+    }
+
+    point spawn;
+    //sprawdzic czy player pojawi sie na innym
+    while (1) {
+        spawn.x = rand() % (map->width - 1) + 1;
+        spawn.y = rand() % (map->height - 1) + 1;
+        //*(map->map + i * map->width + j)
+        if (*(map->map + spawn.y * map->width + spawn.x) == ' ') {
+            *(map->map + spawn.y * map->width + spawn.x) = 'T';
+            break;
+        }
+    }
 }

@@ -10,7 +10,7 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
 
     player p = {0};
 
-    //sprintf(p.name, "Player%d", id);
+    sprintf(p.name, "Player%d", i);
 
     sem_init(&p.received_data, 0, 0);
     sem_init(&p.map_calculated, 0, 0);
@@ -42,11 +42,11 @@ void randomPlayerSpawn(player *player, boardData *board) {
         spawn.x = rand() % (player->world_size.x - 1) + 1;
         spawn.y = rand() % (player->world_size.y - 1) + 1;
         //*(map->map + i * map->width + j)
-        if (*(board->map + spawn.y * board->width + spawn.y) == ' '){
+        if (*(board->map + spawn.y * board->width + spawn.x) == ' '){
             break;
         }
-        //if (MAP_ORIGINAL[spawn.y][spawn.x] == MAP_EMPTY)
-        //    break;
     }
+
+    player->spawn_location= spawn;
 
 }
