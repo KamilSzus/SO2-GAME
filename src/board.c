@@ -1,7 +1,7 @@
 //
 // Created by kamil on 23.10.2022.
 //
-#include "board.h"
+#include "../headers/board.h"
 
 boardData *mapLoad(char *filename) {
     FILE *file = fopen(filename, "r");

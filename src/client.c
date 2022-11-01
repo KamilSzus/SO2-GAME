@@ -3,8 +3,8 @@
 //
 
 #include <string.h>
-#include "client.h"
-#include "server.h"
+#include "../headers/client.h"
+#include "../headers/server.h"
 
 
 void connectToServer() {
@@ -22,9 +22,7 @@ void connectToServer() {
 
     join_shm->player_pid = getpid();
     printf("Identyfikator sesji: %d; pdata=%p......\n", join_shm->player_pid, join_shm);
-
     //printf("%s",join_shm->board->map);
-
     while (1) {
         char msg[1024];
         printf("Podaj tekst: ");

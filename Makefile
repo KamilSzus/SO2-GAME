@@ -136,66 +136,6 @@ SO2/fast:
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/build
 .PHONY : SO2/fast
 
-board.o: board.c.o
-
-.PHONY : board.o
-
-# target to build an object file
-board.c.o:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/board.c.o
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.o
-.PHONY : board.c.o
-
-board.i: board.c.i
-
-.PHONY : board.i
-
-# target to preprocess a source file
-board.c.i:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/board.c.i
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.i
-.PHONY : board.c.i
-
-board.s: board.c.s
-
-.PHONY : board.s
-
-# target to generate assembly for a file
-board.c.s:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/board.c.s
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/board.c.s
-.PHONY : board.c.s
-
-client.o: client.c.o
-
-.PHONY : client.o
-
-# target to build an object file
-client.c.o:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/client.c.o
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/client.c.o
-.PHONY : client.c.o
-
-client.i: client.c.i
-
-.PHONY : client.i
-
-# target to preprocess a source file
-client.c.i:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/client.c.i
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/client.c.i
-.PHONY : client.c.i
-
-client.s: client.c.s
-
-.PHONY : client.s
-
-# target to generate assembly for a file
-client.c.s:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/client.c.s
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/client.c.s
-.PHONY : client.c.s
-
 clientMain.o: clientMain.c.o
 
 .PHONY : clientMain.o
@@ -250,35 +190,125 @@ main.c.s:
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/main.c.s
 .PHONY : main.c.s
 
-server.o: server.c.o
+src/board.o: src/board.c.o
 
-.PHONY : server.o
+.PHONY : src/board.o
 
 # target to build an object file
-server.c.o:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/server.c.o
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/server.c.o
-.PHONY : server.c.o
+src/board.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/board.c.o
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/board.c.o
+.PHONY : src/board.c.o
 
-server.i: server.c.i
+src/board.i: src/board.c.i
 
-.PHONY : server.i
+.PHONY : src/board.i
 
 # target to preprocess a source file
-server.c.i:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/server.c.i
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/server.c.i
-.PHONY : server.c.i
+src/board.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/board.c.i
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/board.c.i
+.PHONY : src/board.c.i
 
-server.s: server.c.s
+src/board.s: src/board.c.s
 
-.PHONY : server.s
+.PHONY : src/board.s
 
 # target to generate assembly for a file
-server.c.s:
-	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/server.c.s
-	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/server.c.s
-.PHONY : server.c.s
+src/board.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/board.c.s
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/board.c.s
+.PHONY : src/board.c.s
+
+src/client.o: src/client.c.o
+
+.PHONY : src/client.o
+
+# target to build an object file
+src/client.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/client.c.o
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/client.c.o
+.PHONY : src/client.c.o
+
+src/client.i: src/client.c.i
+
+.PHONY : src/client.i
+
+# target to preprocess a source file
+src/client.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/client.c.i
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/client.c.i
+.PHONY : src/client.c.i
+
+src/client.s: src/client.c.s
+
+.PHONY : src/client.s
+
+# target to generate assembly for a file
+src/client.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/client.c.s
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/client.c.s
+.PHONY : src/client.c.s
+
+src/player.o: src/player.c.o
+
+.PHONY : src/player.o
+
+# target to build an object file
+src/player.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/player.c.o
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/player.c.o
+.PHONY : src/player.c.o
+
+src/player.i: src/player.c.i
+
+.PHONY : src/player.i
+
+# target to preprocess a source file
+src/player.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/player.c.i
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/player.c.i
+.PHONY : src/player.c.i
+
+src/player.s: src/player.c.s
+
+.PHONY : src/player.s
+
+# target to generate assembly for a file
+src/player.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/player.c.s
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/player.c.s
+.PHONY : src/player.c.s
+
+src/server.o: src/server.c.o
+
+.PHONY : src/server.o
+
+# target to build an object file
+src/server.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/server.c.o
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/server.c.o
+.PHONY : src/server.c.o
+
+src/server.i: src/server.c.i
+
+.PHONY : src/server.i
+
+# target to preprocess a source file
+src/server.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/server.c.i
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/server.c.i
+.PHONY : src/server.c.i
+
+src/server.s: src/server.c.s
+
+.PHONY : src/server.s
+
+# target to generate assembly for a file
+src/server.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/server.c.s
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/server.c.s
+.PHONY : src/server.c.s
 
 # Help Target
 help:
@@ -290,21 +320,24 @@ help:
 	@echo "... edit_cache"
 	@echo "... SO2Client"
 	@echo "... SO2"
-	@echo "... board.o"
-	@echo "... board.i"
-	@echo "... board.s"
-	@echo "... client.o"
-	@echo "... client.i"
-	@echo "... client.s"
 	@echo "... clientMain.o"
 	@echo "... clientMain.i"
 	@echo "... clientMain.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... server.o"
-	@echo "... server.i"
-	@echo "... server.s"
+	@echo "... src/board.o"
+	@echo "... src/board.i"
+	@echo "... src/board.s"
+	@echo "... src/client.o"
+	@echo "... src/client.i"
+	@echo "... src/client.s"
+	@echo "... src/player.o"
+	@echo "... src/player.i"
+	@echo "... src/player.s"
+	@echo "... src/server.o"
+	@echo "... src/server.i"
+	@echo "... src/server.s"
 .PHONY : help
 
 

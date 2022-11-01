@@ -13,7 +13,6 @@
 #include <fcntl.h>
 #include "board.h"
 
-
 typedef struct userJoin {
     int player_number;
     sem_t server_open_request;
@@ -38,6 +37,7 @@ typedef struct sharedMemoryJoin {
 
 typedef struct infoServer {
     //player* players;
+    int playersNumber;
     pid_t server_PID;//id prorocesu
     boardData *board;
     pthread_mutex_t mutex;

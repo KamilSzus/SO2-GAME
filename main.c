@@ -1,7 +1,7 @@
 
 
 
-#include "server.h"
+#include "headers/server.h"
 
 int main() {
     infoServer* server = serverInit();
