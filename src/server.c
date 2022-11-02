@@ -26,6 +26,9 @@ infoServer *serverInit() {
     server->board = mapLoad("map.txt");
     server->server_PID = getpid();
     server->playersNumber = 0;
+    server->beastNumber = 0;
+    server->coinNumber = 0;
+    server->treasureNumber = 0;
     sem_init(&server->update, 0, 1);
 
     //server->sharedMemoryJoin.fd = shm_open("/gameSO2_Join_SHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
@@ -80,27 +83,27 @@ void serverRun(infoServer *server) {
         mapPrint(5, 5, okno1, server->board);
         serverInfoPrint(5, 55, okno1);
         wrefresh(okno1);
-        znak = wgetch(okno1);        // Oczekiwanie na klawisz
+        znak = wgetch(okno1);// Oczekiwanie na klawisz
 
-        if (znak == 'c') {
+        if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
-            mapPrint(5, 5, okno1, server->board);
-            wrefresh(okno1);
-        } else if (znak == 't') {
+            server->coinNumber++;
+        } else if (znak == 't' && server->treasureNumber < 5) {
             generateRandomTreasure(server->board);
-            mapPrint(5, 5, okno1, server->board);
-            wrefresh(okno1);
-        } else if (znak == 'T') {
+            server->treasureNumber++;
+        } else if (znak == 'T' && server->treasureNumber < 5) {
             generateRandomLargeTreasure(server->board);
-            mapPrint(5, 5, okno1, server->board);
-            wrefresh(okno1);
-        }else if(znak == 'B' || znak == 'b'){
-
+            server->treasureNumber++;
+        } else if ((znak == 'B' || znak == 'b') && server->beastNumber < 2) {
+            server->beastNumber++;
         }
+
+        mapPrint(5, 5, okno1, server->board);
+        wrefresh(okno1);
 
         mvwprintw(okno2, 2, 1, "Nacisnale: %c", znak);
         wrefresh(okno2);
-    } while (znak != 'q');
+    } while (znak != 'q' && znak != 'Q');
 
 
     //while (1) {

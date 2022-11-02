@@ -38,6 +38,9 @@ typedef struct sharedMemoryJoin {
 typedef struct infoServer {
     //player* players;
     int playersNumber;
+    int coinNumber;
+    int treasureNumber;
+    int beastNumber;
     pid_t server_PID;//id prorocesu
     boardData *board;
     pthread_mutex_t mutex;
