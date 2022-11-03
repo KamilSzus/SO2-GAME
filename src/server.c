@@ -74,10 +74,10 @@ void serverRun(infoServer *server) {
     mvwprintw(okno1, LINES - 2, 1, "%s", "Spacja konczy program");
     wrefresh(okno1);
 
-    okno2 = newwin(LINES, 20, 0, COLS - 20);
-    box(okno2, 0, 0);
-    mvwprintw(okno2, 1, 1, "%s", "Okno nr 2");
-    wrefresh(okno2);
+    //okno2 = newwin(LINES, 20, 0, COLS - 20);
+    //box(okno2, 0, 0);
+    //mvwprintw(okno2, 1, 1, "%s", "Okno nr 2");
+    //wrefresh(okno2);
 
     do {
         mapPrint(5, 5, okno1, server->board);
@@ -101,8 +101,8 @@ void serverRun(infoServer *server) {
         mapPrint(5, 5, okno1, server->board);
         wrefresh(okno1);
 
-        mvwprintw(okno2, 2, 1, "Nacisnale: %c", znak);
-        wrefresh(okno2);
+        //mvwprintw(okno2, 2, 1, "Nacisnale: %c", znak);
+        //wrefresh(okno2);
     } while (znak != 'q' && znak != 'Q');
 
 
