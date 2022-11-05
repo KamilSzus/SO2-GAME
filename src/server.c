@@ -79,9 +79,16 @@ void serverRun(infoServer *server) {
     //mvwprintw(okno2, 1, 1, "%s", "Okno nr 2");
     //wrefresh(okno2);
 
+    player players[4];
+    pthread_t player_thr[4];
+    for (int i = 0; i < 4; i++) {
+        players[i] = initPlayer(i, server->board, server->server_PID);
+        //pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
+    }
+
     do {
         mapPrint(5, 5, okno1, server->board);
-        serverInfoPrint(5, 55, okno1);
+        serverInfoPrintPlayer(5, 55, okno1, players[0], *server);
         wrefresh(okno1);
         znak = wgetch(okno1);// Oczekiwanie na klawisz
 
@@ -161,4 +168,55 @@ void serverRun(infoServer *server) {
     delwin(okno1);        // Usuniecie okien
     delwin(okno2);
     mapDestroy(server->board);
+}
+
+void serverInfoPrintPlayer(int y, int x, WINDOW *window, player player, infoServer Server) {
+    mvwprintw(window, y++, x, "Server's PID: %d", Server.server_PID);
+    mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", Server.board->campLocationX, Server.board->campLocationY);
+    mvwprintw(window, y++, x + 1, "Round number: %d", 0);
+    y++;
+
+    mvwprintw(window, y, x, "Parameter:   ");
+    mvwprintw(window, y++, x + 15, "%s", player.name);
+
+
+    mvwprintw(window, y, x + 1, "PID:          ");
+    mvwprintw(window, y++, x + 15, "%s", player.PID);
+
+    mvwprintw(window, y++, x + 1, "Type:         ");
+    //mvwprintw(window, y++, x+ 15,"%s",p);
+
+    mvwprintw(window, y++, x + 1, "Curr X/Y:     %d/%d", player.spawn_location.x, player.spawn_location.y);
+
+    mvwprintw(window, y, x + 1, "Deaths:       ");
+    mvwprintw(window, y++, x + 15, "%d", player.round_number);
+
+    y++;
+
+    mvwprintw(window, y, x, "Coins        ");
+
+    y++;
+
+    mvwprintw(window, y, x + 1, "carried       ");
+    mvwprintw(window, y++, x + 15, "%d", player.coins_found);
+
+    mvwprintw(window, y, x + 1, "brought       ");
+    mvwprintw(window, y++, x + 15, "%s", player.coins_brought);
+
+    y++;
+    printLegend(y, x, window);
+
+}
+
+
+void printLegend(int y, int x, WINDOW *window) {
+    mvwprintw(window, y++, x + 1, "1234 - Players");
+    mvwprintw(window, y++, x + 1, "@ - wall");
+    mvwprintw(window, y++, x + 1, "# - bushes (slow down)");
+    mvwprintw(window, y++, x + 1, "* - wild beast");
+    mvwprintw(window, y++, x + 1, "c - one coin");
+    mvwprintw(window, y++, x + 1, "t - treasure (10 coins)");
+    mvwprintw(window, y - 3, x + 25, "T - large treasure (50 coins)");
+    mvwprintw(window, y - 2, x + 25, "C - campsite");
+    mvwprintw(window, y - 1, x + 25, "D - dropped treasure ");
 }

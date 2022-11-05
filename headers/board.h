@@ -46,7 +46,6 @@ typedef struct {
 } boardData;
 
 
-
 boardData *mapLoad(char *filename);
 
 void mapDestroy(boardData *map);

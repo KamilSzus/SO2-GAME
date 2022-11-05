@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "board.h"
+#include "player.h"
 
 typedef struct userJoin {
     int player_number;
@@ -57,5 +58,10 @@ void serverRun(infoServer *server);
 int createFifoFile(char *path);
 
 int createFifoPath(char *dest, int id, char *type);
+
+void serverInfoPrintPlayer(int y, int x, WINDOW *window, player player, infoServer server);
+
+void printLegend(int y, int x, WINDOW *window);
+
 
 #endif //SO2_SERVER_H
