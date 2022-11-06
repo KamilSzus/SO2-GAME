@@ -19,6 +19,8 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
 
     p.world_size.y = board->height;
     p.world_size.x = board->width;
+    p.coins_brought = 0;
+    p.coins_found = 0;
 
     point camp;
     camp.x = board->width;

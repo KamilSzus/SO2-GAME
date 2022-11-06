@@ -46,8 +46,9 @@ void mapPrint(int y, int x, WINDOW *window, boardData *map) {
             if (object == '\0') {
                 continue;
             }
-
+            attron(COLOR_PAIR(object));
             mvwprintw(window, i + y, j + x, "%c", object);
+            attroff(COLOR_PAIR(object));
         }
     }
 }
@@ -60,30 +61,11 @@ void mapDestroy(boardData *map) {
     free(map);
 }
 
-void serverInfoPrint(int y, int x, WINDOW *window) {
-    mvwprintw(window, y++, x, "Server's PID: %d", 666);
-    mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", 0, 0);
-    mvwprintw(window, y++, x + 1, "Round number: %d", 0);
-
-    mvwprintw(window, y++, x, "Parameter:   ");
-    mvwprintw(window, y++, x + 1, "PID:          ");
-    mvwprintw(window, y++, x + 1, "Type:         ");
-    mvwprintw(window, y++, x + 1, "Curr X/Y:     ");
-    mvwprintw(window, y++, x + 1, "Deaths:       ");
-    y++;
-    mvwprintw(window, y++, x, "Coins        ");
-    mvwprintw(window, y++, x + 1, "carried       ");
-    mvwprintw(window, y++, x + 1, "brought       ");
-    y -= 9;
-}
-
 void generateRandomCoin(boardData *map) {
     if (!map) {
         return;
     }
-
     point spawn;
-    //sprawdzic czy player pojawi sie na innym
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
         spawn.y = rand() % (map->height - 1) + 1;
@@ -102,7 +84,6 @@ void generateRandomTreasure(boardData *map) {
     }
 
     point spawn;
-    //sprawdzic czy player pojawi sie na innym
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
         spawn.y = rand() % (map->height - 1) + 1;
@@ -121,7 +102,6 @@ void generateRandomLargeTreasure(boardData *map) {
     }
 
     point spawn;
-    //sprawdzic czy player pojawi sie na innym
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
         spawn.y = rand() % (map->height - 1) + 1;
@@ -131,4 +111,14 @@ void generateRandomLargeTreasure(boardData *map) {
             break;
         }
     }
+}
+
+void init_colors() {
+    init_pair(' ', COLOR_WHITE, COLOR_BLACK);
+    init_pair('@', COLOR_BLACK, COLOR_WHITE);
+    init_pair('1', COLOR_WHITE, COLOR_BLUE);
+    init_pair('*', COLOR_RED, COLOR_BLACK);
+    init_pair('c', COLOR_BLACK, COLOR_YELLOW);
+    init_pair('C', COLOR_YELLOW, COLOR_RED);
+    init_pair('#', COLOR_GREEN, COLOR_BLACK);
 }

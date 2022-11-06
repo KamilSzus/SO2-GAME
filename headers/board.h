@@ -52,12 +52,12 @@ void mapDestroy(boardData *map);
 
 void mapPrint(int y, int x, WINDOW *window, boardData *map);
 
-void serverInfoPrint(int y, int x, WINDOW *window);
-
 void generateRandomCoin(boardData *map);
 
 void generateRandomTreasure(boardData *map);
 
 void generateRandomLargeTreasure(boardData *map);
+
+void init_colors();
 
 #endif //SO2_BOARD_H

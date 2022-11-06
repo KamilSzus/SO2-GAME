@@ -59,7 +59,8 @@ int createFifoFile(char *path);
 
 int createFifoPath(char *dest, int id, char *type);
 
-void serverInfoPrintPlayer(int y, int x, WINDOW *window, player player, infoServer server);
+void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer server);
+void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]);
 
 void printLegend(int y, int x, WINDOW *window);
 

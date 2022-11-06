@@ -61,23 +61,18 @@ infoServer *serverInit() {
 
 void serverRun(infoServer *server) {
     setlocale(LC_ALL, "");
-    WINDOW *okno1, *okno2;    // Okna programu
+    start_color();
+    WINDOW *okno1;    // Okna programu
     int znak;
 
     initscr();    // Rozpoczecie pracy z biblioteka CURSES
     curs_set(0);    // Nie wyswietlaj kursora
     noecho();    // Nie wyswietlaj znakow z klawiatury
+    init_colors();
 
     okno1 = newwin(LINES, COLS - 20, 0, 0);
     box(okno1, 0, 0);            // Standardowe ramki
-    mvwprintw(okno1, 1, 1, "%s", "Okno nr 1");
-    mvwprintw(okno1, LINES - 2, 1, "%s", "Spacja konczy program");
     wrefresh(okno1);
-
-    //okno2 = newwin(LINES, 20, 0, COLS - 20);
-    //box(okno2, 0, 0);
-    //mvwprintw(okno2, 1, 1, "%s", "Okno nr 2");
-    //wrefresh(okno2);
 
     player players[4];
     pthread_t player_thr[4];
@@ -88,8 +83,10 @@ void serverRun(infoServer *server) {
 
     do {
         mapPrint(5, 5, okno1, server->board);
-        serverInfoPrintPlayer(5, 55, okno1, players[0], *server);
+        serverInfoPrintServer(5, 55, okno1, *server);
+        serverInfoPrintPlayers(7, 55, okno1, players);
         wrefresh(okno1);
+        printLegend(19, 55, okno1);
         znak = wgetch(okno1);// Oczekiwanie na klawisz
 
         if (znak == 'c' && server->coinNumber < 10) {
@@ -108,8 +105,6 @@ void serverRun(infoServer *server) {
         mapPrint(5, 5, okno1, server->board);
         wrefresh(okno1);
 
-        //mvwprintw(okno2, 2, 1, "Nacisnale: %c", znak);
-        //wrefresh(okno2);
     } while (znak != 'q' && znak != 'Q');
 
 
@@ -166,46 +161,37 @@ void serverRun(infoServer *server) {
 
     endwin();// Koniec pracy z CURSES
     delwin(okno1);        // Usuniecie okien
-    delwin(okno2);
     mapDestroy(server->board);
+    free(server);
 }
 
-void serverInfoPrintPlayer(int y, int x, WINDOW *window, player player, infoServer Server) {
+void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
     mvwprintw(window, y++, x, "Server's PID: %d", Server.server_PID);
     mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", Server.board->campLocationX, Server.board->campLocationY);
     mvwprintw(window, y++, x + 1, "Round number: %d", 0);
     y++;
-
-    mvwprintw(window, y, x, "Parameter:   ");
-    mvwprintw(window, y++, x + 15, "%s", player.name);
-
-
-    mvwprintw(window, y, x + 1, "PID:          ");
-    mvwprintw(window, y++, x + 15, "%s", player.PID);
-
+    mvwprintw(window, y++, x, "Parameter:   ");
+    mvwprintw(window, y++, x + 1, "PID:          ");
     mvwprintw(window, y++, x + 1, "Type:         ");
     //mvwprintw(window, y++, x+ 15,"%s",p);
-
-    mvwprintw(window, y++, x + 1, "Curr X/Y:     %d/%d", player.spawn_location.x, player.spawn_location.y);
-
-    mvwprintw(window, y, x + 1, "Deaths:       ");
-    mvwprintw(window, y++, x + 15, "%d", player.round_number);
-
-    y++;
-
-    mvwprintw(window, y, x, "Coins        ");
-
-    y++;
-
-    mvwprintw(window, y, x + 1, "carried       ");
-    mvwprintw(window, y++, x + 15, "%d", player.coins_found);
-
+    mvwprintw(window, y++, x + 1, "Deaths:       ");
+    mvwprintw(window, y++, x + 1, "Curr X/Y:     ");
+    mvwprintw(window, y++, x, "Coins        ");
+    mvwprintw(window, y++, x + 1, "carried       ");
     mvwprintw(window, y, x + 1, "brought       ");
-    mvwprintw(window, y++, x + 15, "%s", player.coins_brought);
+}
 
-    y++;
-    printLegend(y, x, window);
+void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]) {
+    for (int i = 0; i < 4; i++) {
+        mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player[i].name);
+        mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player[i].PID);
+        mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player[i].round_number);
+        mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player[i].coins_found);//smierc
+        mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player[i].spawn_location.x, player[i].spawn_location.y);
 
+        mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player[i].coins_found);
+        mvwprintw(window, y + 9, x + 15 + (i * 25), "%d", player[i].coins_brought);
+    }
 }
 
 
