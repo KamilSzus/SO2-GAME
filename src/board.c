@@ -69,7 +69,6 @@ void generateRandomCoin(boardData *map) {
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
         spawn.y = rand() % (map->height - 1) + 1;
-        //*(map->map + i * map->width + j)
         if (*(map->map + spawn.y * map->width + spawn.x) == ' ') {
             *(map->map + spawn.y * map->width + spawn.x) = 'c';
             break;
@@ -87,7 +86,6 @@ void generateRandomTreasure(boardData *map) {
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
         spawn.y = rand() % (map->height - 1) + 1;
-        //*(map->map + i * map->width + j)
         if (*(map->map + spawn.y * map->width + spawn.x) == ' ') {
             *(map->map + spawn.y * map->width + spawn.x) = 't';
             break;
@@ -105,7 +103,6 @@ void generateRandomLargeTreasure(boardData *map) {
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
         spawn.y = rand() % (map->height - 1) + 1;
-        //*(map->map + i * map->width + j)
         if (*(map->map + spawn.y * map->width + spawn.x) == ' ') {
             *(map->map + spawn.y * map->width + spawn.x) = 'T';
             break;

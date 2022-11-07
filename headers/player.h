@@ -13,7 +13,6 @@
 typedef struct player {
     sem_t received_data;
     sem_t map_calculated;
-    char map[100][100];
     char name[8];
     point world_size;
     point spawn_location;
@@ -31,6 +30,7 @@ typedef struct player {
     int coins_brought;
     int move;
 } player;
+
 
 player initPlayer(int i, boardData *board, pid_t serverPID);
 

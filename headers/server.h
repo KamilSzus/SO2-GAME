@@ -14,26 +14,25 @@
 #include "board.h"
 #include "player.h"
 
-typedef struct userJoin {
-    int player_number;
-    sem_t server_open_request;
-    sem_t server_new_request;
-    sem_t server_checked_request;
-    pid_t player_pid;
-    bool isBot;
-    pid_t server_PID;
-    boardData *board;//do testow
-    char payload[1024];
-    //JoinStatus join_status;
-} userJoin;
-
-typedef struct sharedMemoryJoin {
-    int fd;
-    userJoin *userJoin;
-    pthread_t sharedMemoryThread;
-    bool isSharedMemoryRunning;
-
-} sharedMemoryJoin;
+//typedef struct userJoin {
+//    int player_number;
+//    sem_t server_open_request;
+//    sem_t server_new_request;
+//    sem_t server_checked_request;
+//    pid_t player_pid;
+//    bool isBot;
+//    pid_t server_PID;
+//    char payload[1024];
+//    //JoinStatus join_status;
+//} userJoin;
+//
+//typedef struct sharedMemoryJoin {
+//    int fd;
+//    userJoin *userJoin;
+//    pthread_t sharedMemoryThread;
+//    bool isSharedMemoryRunning;
+//
+//} sharedMemoryJoin;
 
 
 typedef struct infoServer {
@@ -45,7 +44,7 @@ typedef struct infoServer {
     pid_t server_PID;//id prorocesu
     boardData *board;
     pthread_mutex_t mutex;
-    sharedMemoryJoin sharedMemoryJoin;
+   // sharedMemoryJoin sharedMemoryJoin;
     sem_t update;
 
 } infoServer;
@@ -55,14 +54,13 @@ infoServer *serverInit();
 
 void serverRun(infoServer *server);
 
-int createFifoFile(char *path);
-
-int createFifoPath(char *dest, int id, char *type);
-
 void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer server);
+
 void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]);
 
 void printLegend(int y, int x, WINDOW *window);
+
+void* player_connection(void* player_struct);
 
 
 #endif //SO2_SERVER_H

@@ -16,13 +16,11 @@ void connectToServer() {
     if (fd == -1) {
         return;
     }
-    ftruncate(fd, sizeof(userJoin));
-    userJoin *join_shm = (userJoin *) mmap(NULL, sizeof(userJoin), PROT_WRITE | PROT_READ,
+    ftruncate(fd, sizeof(player));
+    player *join_shm = (player *) mmap(NULL, sizeof(player), PROT_WRITE | PROT_READ,
                                            MAP_SHARED, fd, 0);
-
     join_shm->player_pid = getpid();
     printf("Identyfikator sesji: %d; pdata=%p......\n", join_shm->player_pid, join_shm);
-    //printf("%s",join_shm->board->map);
     while (1) {
         char msg[1024];
         printf("Podaj tekst: ");

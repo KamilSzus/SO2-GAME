@@ -39,16 +39,14 @@ void randomPlayerSpawn(player *player, boardData *board) {
     }
 
     point spawn;
-    //sprawdzic czy player pojawi sie na innym
     while (1) {
         spawn.x = rand() % (player->world_size.x - 1) + 1;
         spawn.y = rand() % (player->world_size.y - 1) + 1;
-        //*(map->map + i * map->width + j)
-        if (*(board->map + spawn.y * board->width + spawn.x) == ' '){
+        if (*(board->map + spawn.y * board->width + spawn.x) == ' ') {
             break;
         }
     }
 
-    player->spawn_location= spawn;
+    player->spawn_location = spawn;
 
 }
