@@ -61,9 +61,16 @@ infoServer *serverInit() {
 void serverRun(infoServer *server) {
     setlocale(LC_ALL, "");
     start_color();
-    srand ( time(NULL) );
+    srand(time(NULL));
     WINDOW *okno1;    // Okna programu
     int znak;
+
+    player players[4];
+    pthread_t player_thr[4];
+    for (int i = 0; i < 4; i++) {
+        players[i] = initPlayer(i, server->board, server->server_PID);
+        pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
+    }
 
     initscr();    // Rozpoczecie pracy z biblioteka CURSES
     curs_set(0);    // Nie wyswietlaj kursora
@@ -73,13 +80,6 @@ void serverRun(infoServer *server) {
     okno1 = newwin(LINES, COLS, 0, 0);
     box(okno1, 0, 0);            // Standardowe ramki
     wrefresh(okno1);
-
-    player players[4];
-    pthread_t player_thr[4];
-    for (int i = 0; i < 4; i++) {
-        players[i] = initPlayer(i, server->board, server->server_PID);
-        pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
-    }
 
     do {
         mapPrint(5, 5, okno1, server->board);
@@ -166,12 +166,12 @@ void serverRun(infoServer *server) {
 }
 
 void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
-    mvwprintw(window, y++, x, "Server's PID: %d", Server.server_PID);
+    mvwprintw(window, y++, x, "Server's playerPID: %d", Server.server_PID);
     mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", Server.board->campLocationX, Server.board->campLocationY);
     mvwprintw(window, y++, x + 1, "Round number: %d", 0);
     y++;
     mvwprintw(window, y++, x, "Parameter:   ");
-    mvwprintw(window, y++, x + 1, "PID:          ");
+    mvwprintw(window, y++, x + 1, "playerPID:          ");
     mvwprintw(window, y++, x + 1, "Type:         ");
     //mvwprintw(window, y++, x+ 15,"%s",p);
     mvwprintw(window, y++, x + 1, "Deaths:       ");
@@ -184,7 +184,7 @@ void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
 void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]) {
     for (int i = 0; i < 4; i++) {
         mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player[i].name);
-        mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player[i].PID);
+        mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player[i].playerPID);
         mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player[i].round_number);
         mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player[i].coins_found);//smierc
         mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player[i].spawn_location.x, player[i].spawn_location.y);
@@ -210,38 +210,39 @@ void *player_connection(void *playerStruct) {
     player *pPlayer = (player *) playerStruct;
     //printf("%d %d ", pPlayer->spawn_location.x, pPlayer->spawn_location.y);
 
-    char semaforName[100] = { 0 };
-    strcat(semaforName,"/msg_signal");
-    strcat(semaforName,pPlayer->name);
+    char semaforName[100] = {0};
+    strcat(semaforName, "/msg_signal");
+    strcat(semaforName, pPlayer->name);
 
-    sem_t* sem = sem_open(semaforName, O_CREAT, 0600, 0);//semafor tworzy plik
-    if(sem == SEM_FAILED){
+    sem_t *sem = sem_open(semaforName, O_CREAT, 0600, 0);//semafor tworzy plik
+    if (sem == SEM_FAILED) {
         return NULL;
     }
 
-    char shmName[100] = { 0 };
-    strcat(shmName,"/gameSO2_Join_SHM");
-    strcat(shmName,pPlayer->name);
+    char shmName[100] = {0};
+    strcat(shmName, "/gameSO2_Join_SHM");
+    strcat(shmName, pPlayer->name);
 
     int fd = shm_open(shmName, O_CREAT | O_RDWR, 0600); //zwraca id shm
     ftruncate(fd, sizeof(player));
     player *SHPlayer = (player *) mmap(NULL, sizeof(player), PROT_READ | PROT_WRITE,
-                                                     MAP_SHARED, fd, 0);
+                                       MAP_SHARED, fd, 0);
     assert (SHPlayer != MAP_FAILED);
 
     memcpy(SHPlayer, pPlayer, sizeof(player));
 
     sem_init(&SHPlayer->received_data, 1, 1); // shared, signaled
 
-    while (SHPlayer->move=='q') {
+    while (SHPlayer->move != 'q') {
         sem_wait(sem);
         sem_wait(&SHPlayer->received_data);
+
+        //printf("HALOO?");
 
         printf("%c", SHPlayer->move);
 
         sem_post(&SHPlayer->received_data);
     }
-
 //    printf("%d %d ", SHPlayer->spawn_location.x, SHPlayer->spawn_location.y);
 
 }

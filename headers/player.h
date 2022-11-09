@@ -22,13 +22,13 @@ typedef struct player {
     int round_number;
     int bush_timer;
     int ID;
-    pid_t PID;
+    pid_t playerPID;
     pid_t server_PID;
     int type;
     int deaths;
     int coins_found;
     int coins_brought;
-    int move;
+    char move;
 } player;
 
 
