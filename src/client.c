@@ -8,6 +8,20 @@
 
 
 void connectToServer() {
+
+    setlocale(LC_ALL, "");
+    start_color();
+    WINDOW *okno1;    // Okna programu
+
+    initscr();    // Rozpoczecie pracy z biblioteka CURSES
+    curs_set(0);    // Nie wyswietlaj kursora
+    noecho();    // Nie wyswietlaj znakow z klawiatury
+    init_colors();
+
+    okno1 = newwin(LINES, COLS, 0, 0);
+    box(okno1, 0, 0);            // Standardowe ramki
+    wrefresh(okno1);
+
     sem_t *sem = sem_open("/msg_signalPlayer1", 0);
     if (sem == SEM_FAILED) {
         return;
@@ -21,19 +35,20 @@ void connectToServer() {
     ftruncate(fd, sizeof(player));
     player *join_shm = (player *) mmap(NULL, sizeof(player), PROT_WRITE | PROT_READ,
                                        MAP_SHARED, fd, 0);
+    //printf("Identyfikator sesji: %d; pdata=%p......\n", join_shm->playerPID, join_shm);
     join_shm->playerPID = getpid();
-    printf("Identyfikator sesji: %d; pdata=%p......\n", join_shm->playerPID, join_shm);
+
     while (1) {
-        char msg[1024];
-        printf("Podaj tekst: ");
-        join_shm->move = fgetc(stdin);
-        if (!join_shm->move) break;
-        if (*msg)
-            msg[strlen(msg) - 1] = '\x0';
+        mapPrintFragment(5, 5, okno1, join_shm->map);
+        wrefresh(okno1);
+        join_shm->move = wgetch(okno1);
+
+
+        if (join_shm->move == 'q') {
+            break;
+        }
 
         sem_wait(&join_shm->received_data);
-        //strcpy((char *) join_shm->move, msg);
-        join_shm->playerPID = getpid();
         sem_post(&join_shm->received_data);
         sem_post(sem);
     }
@@ -44,6 +59,8 @@ void connectToServer() {
     sem_close(sem);
     munmap(join_shm, sizeof(struct player));
     close(fd);
+    endwin();// Koniec pracy z CURSES
+    delwin(okno1);        // Usuniecie okien
 }
 
 

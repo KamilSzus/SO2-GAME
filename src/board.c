@@ -119,3 +119,17 @@ void init_colors() {
     init_pair('C', COLOR_YELLOW, COLOR_RED);
     init_pair('#', COLOR_GREEN, COLOR_BLACK);
 }
+
+void mapPrintFragment(int y, int x, WINDOW *window, const char map[]) {
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 5; ++j) {
+            char object = (map[i * 5 + j]);
+            if (object == '\0') {
+                continue;
+            }
+            attron(COLOR_PAIR(object));
+            mvwprintw(window, i + y, j + x, "%c", object);
+            attroff(COLOR_PAIR(object));
+        }
+    }
+}

@@ -28,12 +28,15 @@ typedef struct player {
     int deaths;
     int coins_found;
     int coins_brought;
-    char move;
+    int move;
+    char map[25];
 } player;
 
 
 player initPlayer(int i, boardData *board, pid_t serverPID);
 
 void randomPlayerSpawn(player *player, boardData *board);
+
+void mapFragment(boardData *src, point spawn, player *player);
 
 #endif //SO2_PLAYER_H

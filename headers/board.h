@@ -60,4 +60,6 @@ void generateRandomLargeTreasure(boardData *map);
 
 void init_colors();
 
+void mapPrintFragment(int y, int x, WINDOW *window, const char map[]);
+
 #endif //SO2_BOARD_H
