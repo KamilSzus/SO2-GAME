@@ -19,8 +19,8 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
 
     p.world_size.y = board->height;
     p.world_size.x = board->width;
-    p.coins_brought = 0;
-    p.coins_found = 0;
+    p.coinsInDeposit = 0;
+    p.coinsCarried = 0;
 
     point camp;
     camp.x = board->width;
@@ -30,6 +30,7 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     p.server_PID = serverPID;
     randomPlayerSpawn(&p, board);
     mapFragment(board, p.spawn_location, &p);
+    p.pos = p.spawn_location;
 
     return p;
 }
@@ -83,4 +84,122 @@ void mapFragment(boardData *src, point spawn, player *player) {
         }
     }
 
+}
+
+void movePlayer(boardData *map, player *player) {
+    if (!map || !player) {
+        return;
+    }
+
+    if (player->move == 68) {//left
+        point newPosition;
+
+        newPosition.y = player->pos.y;
+        newPosition.x = player->pos.x - 1;
+
+        if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
+            return;
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
+            addOneCoin(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 't') {
+            addSmallTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'T') {
+            addLargeTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
+            depositGold(player);
+        }
+
+        map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
+        map->map[player->pos.y * map->width + player->pos.x] = ' ';
+
+        player->pos = newPosition;
+
+    } else if (player->move == 67) {//right
+        point newPosition;
+
+        newPosition.y = player->pos.y;
+        newPosition.x = player->pos.x + 1;
+
+        if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
+            return;
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
+            addOneCoin(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 't') {
+            addSmallTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'T') {
+            addLargeTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
+            depositGold(player);
+        }
+
+        map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
+        map->map[player->pos.y * map->width + player->pos.x] = ' ';
+
+        player->pos = newPosition;
+
+    } else if (player->move == 65) {//down
+        point newPosition;
+
+        newPosition.y = player->pos.y + 1;
+        newPosition.x = player->pos.x;
+
+        if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
+            return;
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
+            addOneCoin(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 't') {
+            addSmallTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'T') {
+            addLargeTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
+            depositGold(player);
+        }
+
+        map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
+        map->map[player->pos.y * map->width + player->pos.x] = ' ';
+
+        player->pos = newPosition;
+
+    } else if (player->move == 66) {//up
+        point newPosition;
+
+        newPosition.y = player->pos.y - 1;
+        newPosition.x = player->pos.x;
+
+        if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
+            return;
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
+            addOneCoin(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 't') {
+            addSmallTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'T') {
+            addLargeTreasure(player);
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
+            depositGold(player);
+        }
+
+        map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
+        map->map[player->pos.y * map->width + player->pos.x] = ' ';
+
+        player->pos = newPosition;
+    } else {
+
+    }
+}
+
+void addOneCoin(player *player) {
+    player->coinsInDeposit++;
+}
+
+void addSmallTreasure(player *player) {
+    player->coinsInDeposit += 5;
+}
+
+void addLargeTreasure(player *player) {
+    player->coinsInDeposit += 10;
+}
+
+void depositGold(player *player) {
+    player->coinsCarried = player->coinsInDeposit;
+    player->coinsInDeposit = 0;
 }

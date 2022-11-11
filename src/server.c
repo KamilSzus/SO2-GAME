@@ -54,6 +54,19 @@ void serverRun(infoServer *server) {
         serverInfoPrintPlayers(7, 55, okno1, players);
         wrefresh(okno1);
         printLegend(19, 55, okno1);
+
+        movePlayer(server->board,&players[1]);
+
+        if(znak=='w'){
+            players[1].move=66;
+        }else if (znak=='a'){
+            players[1].move=68;
+        }else if (znak=='d'){
+            players[1].move=67;
+        }else if (znak=='s'){
+            players[1].move=65;
+        }
+
         znak = wgetch(okno1);// Oczekiwanie na klawisz
 
         if (znak == 'c' && server->coinNumber < 10) {
@@ -101,11 +114,11 @@ void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]) {
         mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player[i].name);
         mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player[i].playerPID);
         mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player[i].round_number);
-        mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player[i].coins_found);//smierc
+        mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player[i].coinsCarried);//smierc
         mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player[i].spawn_location.x, player[i].spawn_location.y);
 
-        mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player[i].coins_found);
-        mvwprintw(window, y + 9, x + 15 + (i * 25), "%d", player[i].coins_brought);
+        mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player[i].coinsCarried);
+        mvwprintw(window, y + 9, x + 15 + (i * 25), "%d", player[i].coinsInDeposit);
     }
 }
 
@@ -152,7 +165,6 @@ void *player_connection(void *playerStruct) {
         sem_wait(sem);
         sem_wait(&SHPlayer->received_data);
 
-        printf("%c", SHPlayer->move);
 
         sem_post(&SHPlayer->received_data);
     }

@@ -26,8 +26,8 @@ typedef struct player {
     pid_t server_PID;
     int type;
     int deaths;
-    int coins_found;
-    int coins_brought;
+    int coinsCarried;
+    int coinsInDeposit;
     int move;
     char map[25];
 } player;
@@ -38,5 +38,15 @@ player initPlayer(int i, boardData *board, pid_t serverPID);
 void randomPlayerSpawn(player *player, boardData *board);
 
 void mapFragment(boardData *src, point spawn, player *player);
+
+void movePlayer(boardData *map, player *player);
+
+void addOneCoin(player* player);
+
+void addSmallTreasure(player* player);
+
+void addLargeTreasure(player* player);
+
+void depositGold(player* player);
 
 #endif //SO2_PLAYER_H
