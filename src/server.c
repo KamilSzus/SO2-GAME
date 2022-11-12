@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "../headers/server.h"
+#include "../headers/beast.h"
 
 infoServer *serverInit() {
 
@@ -37,6 +38,9 @@ void serverRun(infoServer *server) {
         players[i] = initPlayer(i, server->board, server->server_PID);
         pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
     }
+
+    beast beast;
+    pthread_t beast_thr;
 
     initscr();    // Rozpoczecie pracy z biblioteka CURSES
     curs_set(0);    // Nie wyswietlaj kursora
@@ -76,11 +80,14 @@ void serverRun(infoServer *server) {
         } else if (znak == 'T' && server->treasureNumber < 5) {
             generateRandomLargeTreasure(server->board);
             server->treasureNumber++;
-        } else if ((znak == 'B' || znak == 'b') && server->beastNumber < 2) {
+        } else if ((znak == 'B' || znak == 'b') && server->beastNumber < 1) {
             server->beastNumber++;
+            beast = initBeast( server->board, server->server_PID);
+            pthread_create(&beast_thr, NULL, beastConnection, &beast);
         }
 
         mapPrint(5, 5, okno1, server->board);
+        werase(okno1);
         wrefresh(okno1);
 
     } while (znak != 'q' && znak != 'Q');
@@ -99,7 +106,6 @@ void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
     mvwprintw(window, y++, x, "Parameter:   ");
     mvwprintw(window, y++, x + 1, "playerPID:          ");
     mvwprintw(window, y++, x + 1, "Type:         ");
-    //mvwprintw(window, y++, x+ 15,"%s",p);
     mvwprintw(window, y++, x + 1, "Deaths:       ");
     mvwprintw(window, y++, x + 1, "Curr X/Y:     ");
     mvwprintw(window, y++, x, "Coins        ");
@@ -112,9 +118,8 @@ void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]) {
         mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player[i].name);
         mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player[i].playerPID);
         mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player[i].round_number);
-        mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player[i].coinsCarried);//smierc
-        mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player[i].spawn_location.x, player[i].spawn_location.y);
-
+        mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player[i].deaths);
+        mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player[i].pos.x, player[i].pos.y);
         mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player[i].coinsCarried);
         mvwprintw(window, y + 9, x + 15 + (i * 25), "%d", player[i].coinsInDeposit);
     }
@@ -134,7 +139,6 @@ void printLegend(int y, int x, WINDOW *window) {
 
 void *player_connection(void *playerStruct) {
     player *pPlayer = (player *) playerStruct;
-    //printf("%d %d ", pPlayer->spawn_location.x, pPlayer->spawn_location.y);
 
     char semaforName[100] = {0};
     strcat(semaforName, "/msg_signal");
@@ -166,5 +170,11 @@ void *player_connection(void *playerStruct) {
 
         sem_post(&SHPlayer->received_data);
     }
+
+}
+
+void* beastConnection(void* beastStruct){
+    beast *pBeast = (beast *) beastStruct;
+
 
 }

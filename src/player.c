@@ -109,7 +109,7 @@ void movePlayer(boardData *map, player *player) {
 
     }
     //tymczasowe
-    if(player->move == 68||player->move == 67||player->move == 65||player->move == 66) {
+    if (player->move == 68 || player->move == 67 || player->move == 65 || player->move == 66) {
         if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
             return;
         } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {

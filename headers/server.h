@@ -62,5 +62,6 @@ void printLegend(int y, int x, WINDOW *window);
 
 void* player_connection(void* player_struct);
 
+void* beastConnection(void* beastStruct);
 
 #endif //SO2_SERVER_H

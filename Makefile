@@ -190,6 +190,36 @@ main.c.s:
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/main.c.s
 .PHONY : main.c.s
 
+src/beast.o: src/beast.c.o
+
+.PHONY : src/beast.o
+
+# target to build an object file
+src/beast.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/beast.c.o
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/beast.c.o
+.PHONY : src/beast.c.o
+
+src/beast.i: src/beast.c.i
+
+.PHONY : src/beast.i
+
+# target to preprocess a source file
+src/beast.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/beast.c.i
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/beast.c.i
+.PHONY : src/beast.c.i
+
+src/beast.s: src/beast.c.s
+
+.PHONY : src/beast.s
+
+# target to generate assembly for a file
+src/beast.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/beast.c.s
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/beast.c.s
+.PHONY : src/beast.c.s
+
 src/board.o: src/board.c.o
 
 .PHONY : src/board.o
@@ -326,6 +356,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... src/beast.o"
+	@echo "... src/beast.i"
+	@echo "... src/beast.s"
 	@echo "... src/board.o"
 	@echo "... src/board.i"
 	@echo "... src/board.s"
