@@ -34,6 +34,9 @@ void randomBeastSpawn(beast *pBeast, boardData *board);
 
 void mapFragmentBeast(boardData *board, point point, beast *pBeast);
 
+int beastPull(beast *pBeast, point *newPosition);
+
+void beastMove(beast *beastStruct, point *newPos);
 
 
 #endif //SO2_BEAST_H

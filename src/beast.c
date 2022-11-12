@@ -70,3 +70,133 @@ void randomBeastSpawn(beast *pBeast, boardData *board) {
 
     pBeast->spawn_location = spawn;
 }
+
+int beastPull(beast *pBeast, point *newPosition) {
+    //..1..
+    //.....
+    //..*..
+    //.....
+    //.....
+    if (!pBeast) {
+        return 2;
+    }
+    //up
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x;
+            newPosition->y = pBeast->pos.y - i;
+            return 0;
+        }
+    }
+
+    //down
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[(pBeast->pos.y + i) * 5 + pBeast->pos.x];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x;
+            newPosition->y = pBeast->pos.y + i;
+            return 0;
+        }
+    }
+
+    //left
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[pBeast->pos.y * 5 + pBeast->pos.x - i];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x - i;
+            newPosition->y = pBeast->pos.y;
+            return 0;
+        }
+    }
+
+    //right
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[pBeast->pos.y * 5 + pBeast->pos.x + i];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x + i;
+            newPosition->y = pBeast->pos.y;
+            return 0;
+        }
+    }
+
+    //rightUp
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x + i];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x + i;
+            newPosition->y = pBeast->pos.y - i;
+            return 0;
+        }
+    }
+
+    //leftUp
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x - i];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x - i;
+            newPosition->y = pBeast->pos.y - i;
+            return 0;
+        }
+    }
+
+    //rightDown
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x + i];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x + i;
+            newPosition->y = pBeast->pos.y - i;
+            return 0;
+        }
+    }
+
+    //leftDown
+    for (int i = 1; i <= 2; ++i) {
+        char temp = pBeast->map[(pBeast->pos.y + i) * 5 + pBeast->pos.x - i];
+
+        if (temp == '@') {
+            break;
+        }
+        if (temp > 0 && temp <= 2) {
+            newPosition->x = pBeast->pos.x - i;
+            newPosition->y = pBeast->pos.y + i;
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+void beastMove(beast *beastStruct, point *newPos){
+
+    beastStruct->pos = *newPos;
+
+}

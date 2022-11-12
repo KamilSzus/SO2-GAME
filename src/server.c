@@ -60,17 +60,17 @@ void serverRun(infoServer *server) {
         printLegend(19, 55, okno1);
 
         znak = wgetch(okno1);// Oczekiwanie na klawisz
-        if(znak=='w'){
-            players[1].move=66;
-        }else if (znak=='a'){
-            players[1].move=68;
-        }else if (znak=='d'){
-            players[1].move=67;
-        }else if (znak=='s'){
-            players[1].move=65;
+        if (znak == 'w') {
+            players[1].move = 66;
+        } else if (znak == 'a') {
+            players[1].move = 68;
+        } else if (znak == 'd') {
+            players[1].move = 67;
+        } else if (znak == 's') {
+            players[1].move = 65;
         }
 
-        movePlayer(server->board,&players[1]);
+        movePlayer(server->board, &players[1]);
         if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
             server->coinNumber++;
@@ -82,7 +82,7 @@ void serverRun(infoServer *server) {
             server->treasureNumber++;
         } else if ((znak == 'B' || znak == 'b') && server->beastNumber < 1) {
             server->beastNumber++;
-            beast = initBeast( server->board, server->server_PID);
+            beast = initBeast(server->board, server->server_PID);
             pthread_create(&beast_thr, NULL, beastConnection, &beast);
         }
 
@@ -173,8 +173,13 @@ void *player_connection(void *playerStruct) {
 
 }
 
-void* beastConnection(void* beastStruct){
+void *beastConnection(void *beastStruct) {
     beast *pBeast = (beast *) beastStruct;
-
+    point newPos;
+    while (1) {
+        if (beastPull(beastStruct, &newPos) == 0) {
+            beastMove(beastStruct, &newPos);
+        }
+    }
 
 }

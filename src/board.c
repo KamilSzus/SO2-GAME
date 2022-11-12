@@ -65,6 +65,7 @@ void generateRandomCoin(boardData *map) {
     if (!map) {
         return;
     }
+
     point spawn;
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
@@ -81,6 +82,7 @@ void generateRandomTreasure(boardData *map) {
     if (!map) {
         return;
     }
+
     point spawn;
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
@@ -97,6 +99,7 @@ void generateRandomLargeTreasure(boardData *map) {
     if (!map) {
         return;
     }
+
     point spawn;
     while (1) {
         spawn.x = rand() % (map->width - 1) + 1;
