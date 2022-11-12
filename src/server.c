@@ -27,29 +27,65 @@ infoServer *serverInit() {
 
 void serverRun(infoServer *server) {
     setlocale(LC_ALL, "");
-    start_color();
     srand(time(NULL));
     WINDOW *okno1;    // Okna programu
     int znak;
 
-    player players[4];
-    pthread_t player_thr[4];
-    for (int i = 0; i < 4; i++) {
-        players[i] = initPlayer(i, server->board, server->server_PID);
-        pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
-    }
-
-    beast beast;
-    pthread_t beast_thr;
-
     initscr();    // Rozpoczecie pracy z biblioteka CURSES
     curs_set(0);    // Nie wyswietlaj kursora
     noecho();    // Nie wyswietlaj znakow z klawiatury
+    start_color();
     init_colors();
 
     okno1 = newwin(LINES, COLS, 0, 0);
     box(okno1, 0, 0);            // Standardowe ramki
     wrefresh(okno1);
+
+    player players[2];
+    pthread_t player_thr[2];
+    for (int i = 1; i <= 2; i++) {
+        players[i] = initPlayer(i, server->board, server->server_PID);
+        pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
+    }
+
+    sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
+    if (sem == SEM_FAILED) {
+        return;
+    }
+
+    int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    ftruncate(fd, sizeof(authentication));
+    authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
+                                                                    PROT_READ | PROT_WRITE,
+                                                                    MAP_SHARED, fd, 0);
+    assert (playersAuthentication != MAP_FAILED);
+
+    playersAuthentication->playerNumber = 1;
+    sem_init(&playersAuthentication->authenticationPost, 1, 1);
+    sem_init(&playersAuthentication->authenticationStartGame, 1, 0);
+
+    while (playersAuthentication->playerNumber != 3) {
+        mvwprintw(okno1, 5, 5, "Wait for player number: %d", playersAuthentication->playerNumber);
+        wrefresh(okno1);
+        sem_wait(sem);
+        sem_wait(&playersAuthentication->authenticationPost);
+
+        playersAuthentication->playerNumber++;
+
+        sem_post(&playersAuthentication->authenticationPost);
+    }
+
+    sem_post(&playersAuthentication->authenticationStartGame);
+    sem_post(&playersAuthentication->authenticationStartGame);
+
+
+    sem_close(sem);
+    close(fd);
+    shm_unlink("AuthenticationSHM");
+    munmap(playersAuthentication, sizeof(authentication));
+
+    beast beast;
+    pthread_t beast_thr;
 
     do {
         mapPrint(5, 5, okno1, server->board);
@@ -88,6 +124,7 @@ void serverRun(infoServer *server) {
 
         mapPrint(5, 5, okno1, server->board);
         werase(okno1);
+        box(okno1, 0, 0);            // Standardowe ramki
         wrefresh(okno1);
 
     } while (znak != 'q' && znak != 'Q');
@@ -114,7 +151,7 @@ void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
 }
 
 void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]) {
-    for (int i = 1; i < 4; i++) {
+    for (int i = 1; i <= 2; i++) {
         mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player[i].name);
         mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player[i].playerPID);
         mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player[i].round_number);
@@ -167,10 +204,14 @@ void *player_connection(void *playerStruct) {
         sem_wait(sem);
         sem_wait(&SHPlayer->received_data);
 
-
+        memcpy(pPlayer, SHPlayer, sizeof(player));
         sem_post(&SHPlayer->received_data);
     }
 
+    munmap(SHPlayer, sizeof(player));
+    close(fd);
+    shm_unlink(shmName);
+    sem_close(sem);
 }
 
 void *beastConnection(void *beastStruct) {
@@ -179,6 +220,7 @@ void *beastConnection(void *beastStruct) {
     while (1) {
         if (beastPull(beastStruct, &newPos) == 0) {
             beastMove(beastStruct, &newPos);
+            break;
         }
     }
 

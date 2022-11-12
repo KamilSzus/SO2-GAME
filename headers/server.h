@@ -14,27 +14,6 @@
 #include "board.h"
 #include "player.h"
 
-//typedef struct userJoin {
-//    int player_number;
-//    sem_t server_open_request;
-//    sem_t server_new_request;
-//    sem_t server_checked_request;
-//    pid_t player_pid;
-//    bool isBot;
-//    pid_t server_PID;
-//    char payload[1024];
-//    //JoinStatus join_status;
-//} userJoin;
-//
-//typedef struct sharedMemoryJoin {
-//    int fd;
-//    userJoin *userJoin;
-//    pthread_t sharedMemoryThread;
-//    bool isSharedMemoryRunning;
-//
-//} sharedMemoryJoin;
-
-
 typedef struct infoServer {
     //player* players;
     int playersNumber;
@@ -44,10 +23,16 @@ typedef struct infoServer {
     pid_t server_PID;//id prorocesu
     boardData *board;
     pthread_mutex_t mutex;
-   // sharedMemoryJoin sharedMemoryJoin;
+    // sharedMemoryJoin sharedMemoryJoin;
     sem_t update;
 
 } infoServer;
+
+typedef struct authentication {
+    int playerNumber;
+    sem_t authenticationPost;
+    sem_t authenticationStartGame;
+} authentication;
 
 
 infoServer *serverInit();
@@ -60,8 +45,8 @@ void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]);
 
 void printLegend(int y, int x, WINDOW *window);
 
-void* player_connection(void* player_struct);
+void *player_connection(void *player_struct);
 
-void* beastConnection(void* beastStruct);
+void *beastConnection(void *beastStruct);
 
 #endif //SO2_SERVER_H
