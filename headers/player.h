@@ -29,6 +29,7 @@ typedef struct player {
     int coinsCarried;
     int coinsInDeposit;
     int move;
+    int isPlayerMoved;
     char map[25];
 } player;
 

@@ -55,8 +55,7 @@ void serverRun(infoServer *server) {
         wrefresh(okno1);
         printLegend(19, 55, okno1);
 
-        movePlayer(server->board,&players[1]);
-
+        znak = wgetch(okno1);// Oczekiwanie na klawisz
         if(znak=='w'){
             players[1].move=66;
         }else if (znak=='a'){
@@ -67,8 +66,7 @@ void serverRun(infoServer *server) {
             players[1].move=65;
         }
 
-        znak = wgetch(okno1);// Oczekiwanie na klawisz
-
+        movePlayer(server->board,&players[1]);
         if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
             server->coinNumber++;

@@ -91,81 +91,25 @@ void movePlayer(boardData *map, player *player) {
         return;
     }
 
-    if (player->move == 68) {//left
-        point newPosition;
+    point newPosition;
 
+    if (player->move == 68) {//left
         newPosition.y = player->pos.y;
         newPosition.x = player->pos.x - 1;
-
-        if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
-            return;
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
-            addOneCoin(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 't') {
-            addSmallTreasure(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'T') {
-            addLargeTreasure(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
-            depositGold(player);
-        }
-
-        map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
-        map->map[player->pos.y * map->width + player->pos.x] = ' ';
-
-        player->pos = newPosition;
-
     } else if (player->move == 67) {//right
-        point newPosition;
-
         newPosition.y = player->pos.y;
         newPosition.x = player->pos.x + 1;
-
-        if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
-            return;
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
-            addOneCoin(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 't') {
-            addSmallTreasure(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'T') {
-            addLargeTreasure(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
-            depositGold(player);
-        }
-
-        map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
-        map->map[player->pos.y * map->width + player->pos.x] = ' ';
-
-        player->pos = newPosition;
-
     } else if (player->move == 65) {//down
-        point newPosition;
-
         newPosition.y = player->pos.y + 1;
         newPosition.x = player->pos.x;
-
-        if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
-            return;
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
-            addOneCoin(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 't') {
-            addSmallTreasure(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'T') {
-            addLargeTreasure(player);
-        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
-            depositGold(player);
-        }
-
-        map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
-        map->map[player->pos.y * map->width + player->pos.x] = ' ';
-
-        player->pos = newPosition;
-
     } else if (player->move == 66) {//up
-        point newPosition;
-
         newPosition.y = player->pos.y - 1;
         newPosition.x = player->pos.x;
+    } else {
 
+    }
+    //tymczasowe
+    if(player->move == 68||player->move == 67||player->move == 65||player->move == 66) {
         if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
             return;
         } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
@@ -176,14 +120,23 @@ void movePlayer(boardData *map, player *player) {
             addLargeTreasure(player);
         } else if (map->map[newPosition.y * map->width + newPosition.x] == 'C') {
             depositGold(player);
+
+            map->map[player->pos.y * map->width + player->pos.x] = ' ';
+            player->pos = newPosition;
+            player->move = 0;
+            player->isPlayerMoved = 1;
+
+            return;
         }
 
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
-        map->map[player->pos.y * map->width + player->pos.x] = ' ';
+        if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
+            map->map[player->pos.y * map->width + player->pos.x] = ' ';
+        }
 
         player->pos = newPosition;
-    } else {
-
+        player->move = 0;
+        player->isPlayerMoved = 1;
     }
 }
 
