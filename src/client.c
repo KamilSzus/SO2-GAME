@@ -43,6 +43,7 @@ void connectToServer() {
     sem_post(&playerAuthentication->authenticationPost);
     sem_post(semAuthentication);
     sem_wait(&playerAuthentication->authenticationStartGame);
+    werase(okno1);
 
     munmap(playerAuthentication, sizeof(authentication));
     shm_unlink("/AuthenticationSHM");

@@ -19,7 +19,7 @@ boardData *mapLoad(char *filename) {
 
     fscanf(file, "%d %d\n", &map->width, &map->height);
 
-    map->map = (char *) calloc((map->width * map->height), sizeof(char));
+    map->map = (char *) calloc(((map->width + 1) * (map->height + 1)), sizeof(char));
     if (!map->map) {
         mapDestroy(map);
         fclose(file);

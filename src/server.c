@@ -41,8 +41,8 @@ void serverRun(infoServer *server) {
     box(okno1, 0, 0);            // Standardowe ramki
     wrefresh(okno1);
 
-    player players[2];
-    pthread_t player_thr[2];
+    player players[3];
+    pthread_t player_thr[3];
     for (int i = 1; i <= 2; i++) {
         players[i] = initPlayer(i, server->board, server->server_PID);
         pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
@@ -75,9 +75,9 @@ void serverRun(infoServer *server) {
         sem_post(&playersAuthentication->authenticationPost);
     }
 
-    sem_post(&playersAuthentication->authenticationStartGame);
-    sem_post(&playersAuthentication->authenticationStartGame);
-
+    for (int i = 0; i < 2; i++) {
+        sem_post(&playersAuthentication->authenticationStartGame);
+    }
 
     sem_close(sem);
     close(fd);
@@ -89,7 +89,7 @@ void serverRun(infoServer *server) {
 
     do {
         mapPrint(5, 5, okno1, server->board);
-        //mapPrintFragment(5,5,okno1,players[1].map);
+        //mapPrintFragment(5, 5, okno1, players[1].map);
         serverInfoPrintServer(5, 55, okno1, *server);
         serverInfoPrintPlayers(7, 55, okno1, players);
         wrefresh(okno1);

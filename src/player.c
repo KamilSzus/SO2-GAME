@@ -17,8 +17,11 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
 
     p.ID = i;
 
-    p.world_size.y = board->height;
-    p.world_size.x = board->width;
+    point worldSize;
+    worldSize.x=board->width;
+    worldSize.y = board->height;
+
+    p.world_size = worldSize;
     p.coinsInDeposit = 0;
     p.coinsCarried = 0;
 
