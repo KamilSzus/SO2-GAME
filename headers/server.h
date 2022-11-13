@@ -34,11 +34,11 @@ typedef struct authentication {
     sem_t authenticationStartGame;
 } authentication;
 
-//typedef struct serverAndThread {
-//    int id;
-//    infoServer *infoServer;
-//    void * structInThread;
-//} serverAndThread;
+typedef struct serverAndThread {
+    int id;
+    infoServer *infoServer;
+    void * structInThread;
+} serverAndThread;
 
 
 infoServer *serverInit();

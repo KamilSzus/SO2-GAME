@@ -41,10 +41,14 @@ void serverRun(infoServer *server) {
     box(okno1, 0, 0);            // Standardowe ramki
     wrefresh(okno1);
 
+    serverAndThread serverAndThread[3];
     player players[3];
     pthread_t player_thr[3];
     for (int i = 1; i <= 2; i++) {
         players[i] = initPlayer(i, server->board, server->server_PID);
+        serverAndThread->infoServer = server;
+        serverAndThread->id=i;
+        serverAndThread->structInThread = players[i];
         pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
     }
 
