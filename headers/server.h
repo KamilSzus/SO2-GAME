@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include "board.h"
 #include "player.h"
+#include "beast.h"
 
 typedef struct infoServer {
     //player* players;
@@ -37,7 +38,9 @@ typedef struct authentication {
 typedef struct serverAndThread {
     int id;
     infoServer *infoServer;
-    void * structInThread;
+    player* playerInThread;
+    beast * beastInThread;
+    //void * structInThread;
 } serverAndThread;
 
 
