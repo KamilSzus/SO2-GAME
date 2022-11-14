@@ -101,17 +101,17 @@ void serverRun(infoServer *server) {
 
         znak = wgetch(okno1);// Oczekiwanie na klawisz
         if (znak == 'w') {
-            serverAndThread[1].playerInThread[1].move = 66;
+            serverAndThread[1].playerInThread->move = 66;
         } else if (znak == 'a') {
-            serverAndThread[1].playerInThread[1].move = 68;
+            serverAndThread[1].playerInThread->move = 68;
         } else if (znak == 'd') {
-            serverAndThread[1].playerInThread[1].move = 67;
+            serverAndThread[1].playerInThread->move = 67;
         } else if (znak == 's') {
-            serverAndThread[1].playerInThread[1].move = 65;
+            serverAndThread[1].playerInThread->move = 65;
         }
 
         //if (serverAndThread[1].playerInThread[1].isPlayerMoved == 1) {
-        movePlayer(server->board, &serverAndThread[1].playerInThread[1]);
+        movePlayer(server->board, serverAndThread[1].playerInThread);
         //}
         if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
