@@ -26,6 +26,23 @@ infoServer *serverInit() {
 }
 
 void serverRun(infoServer *server) {
+
+
+    serverAndThread serverAndThread[3];
+    player players[3];
+    pthread_t player_thr[3];
+    for (int i = 1; i <= 2; i++) {
+        players[i] = initPlayer(i, server->board, server->server_PID);
+        serverAndThread[i].infoServer = server;
+        serverAndThread[i].id = i;
+        serverAndThread[i].playerInThread = &players[i];
+        pthread_create(&player_thr[i], NULL, player_connection, &serverAndThread[i]);
+    }
+    sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
+    if (sem == SEM_FAILED) {
+        return;
+    }
+
     setlocale(LC_ALL, "");
     srand(time(NULL));
     WINDOW *okno1;    // Okna programu
@@ -40,19 +57,6 @@ void serverRun(infoServer *server) {
     okno1 = newwin(LINES, COLS, 0, 0);
     box(okno1, 0, 0);            // Standardowe ramki
     wrefresh(okno1);
-
-    player players[3];
-    pthread_t player_thr[3];
-    for (int i = 1; i <= 2; i++) {
-        players[i] = initPlayer(i, server->board, server->server_PID);
-        pthread_create(&player_thr[i], NULL, player_connection, &players[i]);
-    }
-
-    sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
-    if (sem == SEM_FAILED) {
-        return;
-    }
-
     int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
     ftruncate(fd, sizeof(authentication));
     authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
@@ -97,16 +101,18 @@ void serverRun(infoServer *server) {
 
         znak = wgetch(okno1);// Oczekiwanie na klawisz
         if (znak == 'w') {
-            players[1].move = 66;
+            serverAndThread[1].playerInThread->move = 66;
         } else if (znak == 'a') {
-            players[1].move = 68;
+            serverAndThread[1].playerInThread->move = 68;
         } else if (znak == 'd') {
-            players[1].move = 67;
+            serverAndThread[1].playerInThread->move = 67;
         } else if (znak == 's') {
-            players[1].move = 65;
+            serverAndThread[1].playerInThread->move = 65;
         }
 
-        movePlayer(server->board, &players[1]);
+        //if (serverAndThread[1].playerInThread[1].isPlayerMoved == 1) {
+        movePlayer(server->board, serverAndThread[1].playerInThread);
+        //}
         if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
             server->coinNumber++;
@@ -175,7 +181,8 @@ void printLegend(int y, int x, WINDOW *window) {
 }
 
 void *player_connection(void *playerStruct) {
-    player *pPlayer = (player *) playerStruct;
+    serverAndThread *pServerAndThread = (serverAndThread *) playerStruct;
+    player *pPlayer = pServerAndThread->playerInThread;
 
     char semaforName[100] = {0};
     strcat(semaforName, "/msg_signal");
@@ -204,7 +211,8 @@ void *player_connection(void *playerStruct) {
         sem_wait(sem);
         sem_wait(&SHPlayer->received_data);
 
-        memcpy(pPlayer, SHPlayer, sizeof(player));
+        mapFragment(pServerAndThread->infoServer->board, pPlayer->pos, pPlayer);
+        memcpy(SHPlayer, pPlayer, sizeof(player));
         sem_post(&SHPlayer->received_data);
     }
 

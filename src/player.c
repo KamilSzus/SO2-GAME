@@ -34,6 +34,7 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     randomPlayerSpawn(&p, board);
     mapFragment(board, p.spawn_location, &p);
     p.pos = p.spawn_location;
+    p.isPlayerMoved = 0;
 
     return p;
 }

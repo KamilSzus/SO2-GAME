@@ -53,7 +53,6 @@ void connectToServer() {
     switch (playerID) {
         case 1:
             wrefresh(okno1);
-
             sem_t *sem = sem_open("/msg_signalPlayer1", 0);
             if (sem == SEM_FAILED) {
                 return;
