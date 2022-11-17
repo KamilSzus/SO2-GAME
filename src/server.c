@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "../headers/server.h"
-#include "../headers/beast.h"
 
 infoServer *serverInit() {
 
@@ -20,14 +19,14 @@ infoServer *serverInit() {
     server->beastNumber = 0;
     server->coinNumber = 0;
     server->treasureNumber = 0;
+    server->roundNumber = 0;
     sem_init(&server->update, 0, 1);
 
     return server;
 }
 
 void serverRun(infoServer *server) {
-
-
+    srand(time(NULL));
     serverAndThread serverAndThread[3];
     player players[3];
     pthread_t player_thr[3];
@@ -44,7 +43,6 @@ void serverRun(infoServer *server) {
     }
 
     setlocale(LC_ALL, "");
-    srand(time(NULL));
     WINDOW *okno1;    // Okna programu
     int znak;
 
@@ -95,10 +93,14 @@ void serverRun(infoServer *server) {
         mapPrint(5, 5, okno1, server->board);
         //mapPrintFragment(5, 5, okno1, players[1].map);
         serverInfoPrintServer(5, 55, okno1, *server);
-        serverInfoPrintPlayers(7, 55, okno1, players);
-        wrefresh(okno1);
         printLegend(19, 55, okno1);
+        for (int i = 1; i <= 2; i++) {
+            serverInfoPrintPlayers(7, 55, i, okno1, *serverAndThread[i].playerInThread);
+        }
 
+        wrefresh(okno1);
+        nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
+        server->roundNumber++;
         znak = wgetch(okno1);// Oczekiwanie na klawisz
         if (znak == 'w') {
             serverAndThread[1].playerInThread->move = 66;
@@ -109,9 +111,20 @@ void serverRun(infoServer *server) {
         } else if (znak == 's') {
             serverAndThread[1].playerInThread->move = 65;
         }
-
+        if (znak == 'i') {
+            serverAndThread[2].playerInThread->move = 66;
+        } else if (znak == 'j') {
+            serverAndThread[2].playerInThread->move = 68;
+        } else if (znak == 'l') {
+            serverAndThread[2].playerInThread->move = 67;
+        } else if (znak == 'k') {
+            serverAndThread[2].playerInThread->move = 65;
+        }
+        //for (int i = 1; i <= 2; i++) {
+        //    movePlayer(server->board, serverAndThread[i].playerInThread);
+        //}
         //if (serverAndThread[1].playerInThread[1].isPlayerMoved == 1) {
-        movePlayer(server->board, serverAndThread[1].playerInThread);
+        //movePlayer(server->board, serverAndThread[1].playerInThread);
         //}
         if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
@@ -125,13 +138,13 @@ void serverRun(infoServer *server) {
         } else if ((znak == 'B' || znak == 'b') && server->beastNumber < 1) {
             server->beastNumber++;
             beast = initBeast(server->board, server->server_PID);
-            pthread_create(&beast_thr, NULL, beastConnection, &beast);
+            serverAndThread[0].beastInThread = &beast;
+            pthread_create(&beast_thr, NULL, beastConnection, &serverAndThread[0]);
         }
 
-        mapPrint(5, 5, okno1, server->board);
         werase(okno1);
         box(okno1, 0, 0);            // Standardowe ramki
-        wrefresh(okno1);
+        flushinp();
 
     } while (znak != 'q' && znak != 'Q');
 
@@ -143,8 +156,8 @@ void serverRun(infoServer *server) {
 
 void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
     mvwprintw(window, y++, x, "Server's playerPID: %d", Server.server_PID);
-    mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", Server.board->campLocationX, Server.board->campLocationY);
-    mvwprintw(window, y++, x + 1, "Round number: %d", 0);
+    mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", 21, 10);
+    mvwprintw(window, y++, x + 1, "Round number: %d", Server.roundNumber);
     y++;
     mvwprintw(window, y++, x, "Parameter:   ");
     mvwprintw(window, y++, x + 1, "playerPID:          ");
@@ -156,16 +169,14 @@ void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
     mvwprintw(window, y, x + 1, "brought       ");
 }
 
-void serverInfoPrintPlayers(int y, int x, WINDOW *window, player player[]) {
-    for (int i = 1; i <= 2; i++) {
-        mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player[i].name);
-        mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player[i].playerPID);
-        mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player[i].round_number);
-        mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player[i].deaths);
-        mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player[i].pos.x, player[i].pos.y);
-        mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player[i].coinsCarried);
-        mvwprintw(window, y + 9, x + 15 + (i * 25), "%d", player[i].coinsInDeposit);
-    }
+void serverInfoPrintPlayers(int y, int x, int i, WINDOW *window, player player) {
+    mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player.name);
+    mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player.playerPID);
+    mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player.round_number);
+    mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player.deaths);
+    mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player.pos.x, player.pos.y);
+    mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player.coinsCarried);
+    mvwprintw(window, y + 9, x + 15 + (i * 25), "%d", player.coinsInDeposit);
 }
 
 void printLegend(int y, int x, WINDOW *window) {
@@ -210,8 +221,10 @@ void *player_connection(void *playerStruct) {
     while (SHPlayer->move != 'q') {
         sem_wait(sem);
         sem_wait(&SHPlayer->received_data);
-
+        dropGoldAfterDeath(pPlayer, pServerAndThread->infoServer->board);
         mapFragment(pServerAndThread->infoServer->board, pPlayer->pos, pPlayer);
+        pPlayer->move = SHPlayer->move;
+        pPlayer->playerPID = SHPlayer->playerPID;
         memcpy(SHPlayer, pPlayer, sizeof(player));
         sem_post(&SHPlayer->received_data);
     }
@@ -223,11 +236,12 @@ void *player_connection(void *playerStruct) {
 }
 
 void *beastConnection(void *beastStruct) {
-    beast *pBeast = (beast *) beastStruct;
+    serverAndThread *pServerAndThread = (serverAndThread *) beastStruct;
+    beast *pBeast = (beast *) pServerAndThread->beastInThread;
     point newPos;
     while (1) {
-        if (beastPull(beastStruct, &newPos) == 0) {
-            beastMove(beastStruct, &newPos);
+        if (beastPull(pBeast, &newPos) == 0) {
+            beastMove(pBeast, &newPos);
             break;
         }
     }

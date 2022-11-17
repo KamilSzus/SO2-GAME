@@ -91,7 +91,7 @@ void mapFragment(boardData *src, point spawn, player *player) {
 }
 
 void movePlayer(boardData *map, player *player) {
-    if (!map || !player) {
+    if (!map || !player || player->isPlayerMoved!=0) {
         return;
     }
 
@@ -110,7 +110,7 @@ void movePlayer(boardData *map, player *player) {
         newPosition.y = player->pos.y - 1;
         newPosition.x = player->pos.x;
     } else {
-
+        return;
     }
     //tymczasowe
     if (player->move == 68 || player->move == 67 || player->move == 65 || player->move == 66) {
@@ -128,7 +128,7 @@ void movePlayer(boardData *map, player *player) {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
             player->pos = newPosition;
             player->move = 0;
-            player->isPlayerMoved = 1;
+            //player->isPlayerMoved = 1;
 
             return;
         }
@@ -140,7 +140,7 @@ void movePlayer(boardData *map, player *player) {
 
         player->pos = newPosition;
         player->move = 0;
-        player->isPlayerMoved = 1;
+       // player->isPlayerMoved = 1;
     }
 }
 
@@ -159,4 +159,11 @@ void addLargeTreasure(player *player) {
 void depositGold(player *player) {
     player->coinsCarried = player->coinsInDeposit;
     player->coinsInDeposit = 0;
+}
+
+void dropGoldAfterDeath(player* player,boardData *map){
+    if(player->isDeath==1){
+        map->map[player->pos.y * map->width + player->pos.x] = 'D';
+        randomPlayerSpawn(player,map);
+    }
 }
