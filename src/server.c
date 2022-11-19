@@ -89,7 +89,17 @@ void serverRun(infoServer *server) {
     beast beast;
     pthread_t beast_thr;
 
+    pthread_t keyboardInput;
+    keyThreadInfo keyInfo;
+    keyInfo.key = 0;
+    pthread_create(&keyboardInput, NULL, keyboardInputFunc, &keyInfo);
+
     do {
+        pthread_mutex_lock(&keyInfo.mutex);
+        znak = keyInfo.key;
+        keyInfo.key = 0;
+        pthread_mutex_unlock(&keyInfo.mutex);
+
         mapPrint(5, 5, okno1, server->board);
         //mapPrintFragment(5, 5, okno1, players[1].map);
         serverInfoPrintServer(5, 55, okno1, *server);
@@ -101,31 +111,10 @@ void serverRun(infoServer *server) {
         wrefresh(okno1);
         nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
         server->roundNumber++;
-        znak = wgetch(okno1);// Oczekiwanie na klawisz
-        if (znak == 'w') {
-            serverAndThread[1].playerInThread->move = 66;
-        } else if (znak == 'a') {
-            serverAndThread[1].playerInThread->move = 68;
-        } else if (znak == 'd') {
-            serverAndThread[1].playerInThread->move = 67;
-        } else if (znak == 's') {
-            serverAndThread[1].playerInThread->move = 65;
+        for (int i = 1; i <= 2; i++) {
+            mvwprintw(okno1, 5 + i, 5 + i, "Server's playerPID: %d", serverAndThread[i].playerInThread->move);
+            movePlayer(server->board, serverAndThread[i].playerInThread);
         }
-        if (znak == 'i') {
-            serverAndThread[2].playerInThread->move = 66;
-        } else if (znak == 'j') {
-            serverAndThread[2].playerInThread->move = 68;
-        } else if (znak == 'l') {
-            serverAndThread[2].playerInThread->move = 67;
-        } else if (znak == 'k') {
-            serverAndThread[2].playerInThread->move = 65;
-        }
-        //for (int i = 1; i <= 2; i++) {
-        //    movePlayer(server->board, serverAndThread[i].playerInThread);
-        //}
-        //if (serverAndThread[1].playerInThread[1].isPlayerMoved == 1) {
-        //movePlayer(server->board, serverAndThread[1].playerInThread);
-        //}
         if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
             server->coinNumber++;
@@ -145,7 +134,7 @@ void serverRun(infoServer *server) {
         werase(okno1);
         box(okno1, 0, 0);            // Standardowe ramki
         flushinp();
-
+        //ustawienie klakiszy od nowa
     } while (znak != 'q' && znak != 'Q');
 
     endwin();// Koniec pracy z CURSES
@@ -224,7 +213,8 @@ void *player_connection(void *playerStruct) {
         dropGoldAfterDeath(pPlayer, pServerAndThread->infoServer->board);
         mapFragment(pServerAndThread->infoServer->board, pPlayer->pos, pPlayer);
         pPlayer->move = SHPlayer->move;
-        pPlayer->playerPID = SHPlayer->playerPID;
+        movePlayer(pServerAndThread->infoServer->board, pPlayer);
+        //pPlayer->playerPID = SHPlayer->playerPID; czemu to nie dziala
         memcpy(SHPlayer, pPlayer, sizeof(player));
         sem_post(&SHPlayer->received_data);
     }
@@ -246,4 +236,33 @@ void *beastConnection(void *beastStruct) {
         }
     }
 
+}
+
+
+int keyFunc(void) {
+    int ch = getch();
+
+    if (ch != ERR) {
+        ungetch(ch);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+void *keyboardInputFunc(void *pKey) {
+    keyThreadInfo *info = (keyThreadInfo *) pKey;
+
+    int key = 0;
+
+    while (info->key != 'q' && info->key != 'Q') {
+        if (keyFunc()) {
+            key = getch();
+            pthread_mutex_lock(&info->mutex);
+            info->key = key;
+            pthread_mutex_unlock(&info->mutex);
+        }
+    }
+
+    return NULL;
 }

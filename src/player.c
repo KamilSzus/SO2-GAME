@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "../headers/player.h"
 
 player initPlayer(int i, boardData *board, pid_t serverPID) {
@@ -109,9 +110,8 @@ void movePlayer(boardData *map, player *player) {
     } else if (player->move == 66) {//up
         newPosition.y = player->pos.y - 1;
         newPosition.x = player->pos.x;
-    } else {
-        return;
     }
+
     //tymczasowe
     if (player->move == 68 || player->move == 67 || player->move == 65 || player->move == 66) {
         if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
@@ -132,7 +132,7 @@ void movePlayer(boardData *map, player *player) {
 
             return;
         }
-
+        assert(1==2);
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
         if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';

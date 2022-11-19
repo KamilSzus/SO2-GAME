@@ -35,6 +35,11 @@ typedef struct authentication {
     sem_t authenticationStartGame;
 } authentication;
 
+typedef struct keyThreadInfo {
+    int key;
+    pthread_mutex_t mutex;
+} keyThreadInfo;
+
 typedef struct serverAndThread {
     int id;
     infoServer *infoServer;
@@ -61,5 +66,9 @@ void printLegend(int y, int x, WINDOW *window);
 void *player_connection(void *player_struct);
 
 void *beastConnection(void *beastStruct);
+
+int keyFunc(void);
+
+void* keyboardInputFunc(void* pkey);
 
 #endif //SO2_SERVER_H

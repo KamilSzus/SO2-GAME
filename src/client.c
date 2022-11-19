@@ -81,6 +81,7 @@ void connectToServer() {
                 sem_wait(&join_shm->received_data);
                 sem_post(&join_shm->received_data);
                 sem_post(sem);
+                flushinp();
             }
 
             sem_close(sem);
@@ -122,6 +123,7 @@ void connectToServer() {
                 sem_wait(&join_shmPlayer2->received_data);
                 sem_post(&join_shmPlayer2->received_data);
                 sem_post(semPlayer2);
+                flushinp();
             }
 
             sem_close(semPlayer2);
