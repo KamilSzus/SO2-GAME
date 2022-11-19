@@ -1,10 +1,15 @@
 //
 // Created by kamil on 29.10.2022.
 //
+#define _GNU_SOURCE
 
 #include <string.h>
+#include <bits/types/wint_t.h>
+#include <wchar.h>
+#include <signal.h>
 #include "../headers/client.h"
 #include "../headers/server.h"
+#include <pthread.h>
 
 
 void connectToServer() {
@@ -50,6 +55,14 @@ void connectToServer() {
     close(fdAuthentication);
     sem_close(semAuthentication);
 
+    pthread_t keyboardInput;
+    keyThreadInfoPlayer keyInfo;
+    keyInfo.key = 0;
+    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
+    if (pthread_mutex_init(&keyInfo.mutex, NULL) != 0) {
+        return;
+    }
+
     switch (playerID) {
         case 1:
             wrefresh(okno1);
@@ -67,22 +80,21 @@ void connectToServer() {
             player *join_shm = (player *) mmap(NULL, sizeof(player), PROT_WRITE | PROT_READ,
                                                MAP_SHARED, fd, 0);
             join_shm->playerPID = getpid();
-
-            while (1) {
+            do {
                 mapPrintFragment(5, 5, okno1, join_shm->map);
                 wrefresh(okno1);
-                join_shm->move = wgetch(okno1);
 
-
-                if (join_shm->move == 'q') {
-                    break;
-                }
-
+                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
+                mvwprintw(okno1, 5, 5, "Wait for player number: %d", keyInfo.key);
+                wrefresh(okno1);
+                pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
+                // }
+                join_shm->move = keyInfo.key;
                 sem_wait(&join_shm->received_data);
                 sem_post(&join_shm->received_data);
                 sem_post(sem);
-                flushinp();
-            }
+                // flushinp();
+            } while (join_shm->move != 'q' && join_shm->move != 'Q');
 
             sem_close(sem);
             munmap(join_shm, sizeof(struct player));
@@ -138,6 +150,30 @@ void connectToServer() {
     }
 }
 
+int keyFuncPlayer(void) {
+    int ch = getch();
+
+    if (ch != ERR) {
+        ungetch(ch);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+void *keyboardInputFuncPlayer(void *pKey) {
+    keyThreadInfoPlayer *info = (keyThreadInfoPlayer *) pKey;
+
+    int key = 0;
+    if (keyFunc()) {
+        key = getch();
+        pthread_mutex_lock(&info->mutex);
+        info->key = key;
+        pthread_mutex_unlock(&info->mutex);
+    }
+
+    return NULL;
+}
 
 
 

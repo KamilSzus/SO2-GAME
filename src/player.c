@@ -128,11 +128,11 @@ void movePlayer(boardData *map, player *player) {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
             player->pos = newPosition;
             player->move = 0;
-            //player->isPlayerMoved = 1;
+            player->isPlayerMoved = 1;
 
             return;
         }
-        assert(1==2);
+        //assert(1==2);
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
         if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
@@ -140,7 +140,7 @@ void movePlayer(boardData *map, player *player) {
 
         player->pos = newPosition;
         player->move = 0;
-       // player->isPlayerMoved = 1;
+        player->isPlayerMoved = 1;
     }
 }
 

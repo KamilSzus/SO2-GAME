@@ -7,13 +7,17 @@
 
 #include "board.h"
 
-typedef struct Player {
 
-
-}Player;
-
+typedef struct keyThreadInfoPlayer {
+    int key;
+    pthread_mutex_t mutex;
+} keyThreadInfoPlayer;
 
 void connectToServer();
-void displayMap(boardData* map);
+
+void *keyboardInputFuncPlayer(void *pKey);
+
+int keyFuncPlayer(void);
+
 
 #endif //SO2_CLIENT_H
