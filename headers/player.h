@@ -31,6 +31,7 @@ typedef struct player {
     int move;
     int isPlayerMoved;
     char map[25];
+    int isDeath;
 } player;
 
 
@@ -49,5 +50,11 @@ void addSmallTreasure(player* player);
 void addLargeTreasure(player* player);
 
 void depositGold(player* player);
+
+void killPlayer(player* player,boardData *map);
+
+void dropGoldAfterDeath(player* player,boardData *map);
+
+
 
 #endif //SO2_PLAYER_H

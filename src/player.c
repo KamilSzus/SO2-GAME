@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "../headers/player.h"
 
 player initPlayer(int i, boardData *board, pid_t serverPID) {
@@ -91,7 +92,7 @@ void mapFragment(boardData *src, point spawn, player *player) {
 }
 
 void movePlayer(boardData *map, player *player) {
-    if (!map || !player) {
+    if (!map || !player || player->isPlayerMoved!=0) {
         return;
     }
 
@@ -109,9 +110,8 @@ void movePlayer(boardData *map, player *player) {
     } else if (player->move == 66) {//up
         newPosition.y = player->pos.y - 1;
         newPosition.x = player->pos.x;
-    } else {
-
     }
+
     //tymczasowe
     if (player->move == 68 || player->move == 67 || player->move == 65 || player->move == 66) {
         if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
@@ -128,11 +128,11 @@ void movePlayer(boardData *map, player *player) {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
             player->pos = newPosition;
             player->move = 0;
-            player->isPlayerMoved = 1;
+            //player->isPlayerMoved = 1;
 
             return;
         }
-
+        assert(1==2);
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
         if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
@@ -140,7 +140,7 @@ void movePlayer(boardData *map, player *player) {
 
         player->pos = newPosition;
         player->move = 0;
-        player->isPlayerMoved = 1;
+       // player->isPlayerMoved = 1;
     }
 }
 
@@ -159,4 +159,11 @@ void addLargeTreasure(player *player) {
 void depositGold(player *player) {
     player->coinsCarried = player->coinsInDeposit;
     player->coinsInDeposit = 0;
+}
+
+void dropGoldAfterDeath(player* player,boardData *map){
+    if(player->isDeath==1){
+        map->map[player->pos.y * map->width + player->pos.x] = 'D';
+        randomPlayerSpawn(player,map);
+    }
 }
