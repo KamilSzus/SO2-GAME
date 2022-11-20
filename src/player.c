@@ -36,6 +36,8 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     mapFragment(board, p.spawn_location, &p);
     p.pos = p.spawn_location;
     p.isPlayerMoved = 0;
+    p.isConnected = 0;
+    p.bushTimer = 0;
 
     return p;
 }
@@ -130,6 +132,9 @@ void movePlayer(boardData *map, player *player) {
             player->isPlayerMoved = 1;
 
             return;
+        }
+        else if(map->map[newPosition.y * map->width + newPosition.x] == '#'){
+            player->bushTimer = 2;
         }
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
         if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {

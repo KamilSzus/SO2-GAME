@@ -53,7 +53,7 @@ void serverRun(infoServer *server) {
     init_colors();
 
     okno1 = newwin(LINES, COLS, 0, 0);
-    box(okno1, 0, 0);            // Standardowe ramki
+    box(okno1, 0, 0);
     wrefresh(okno1);
     int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
     ftruncate(fd, sizeof(authentication));
@@ -79,12 +79,16 @@ void serverRun(infoServer *server) {
 
     for (int i = 0; i < 2; i++) {
         sem_post(&playersAuthentication->authenticationStartGame);
+        server->playersNumber++;
     }
 
     sem_close(sem);
     close(fd);
     shm_unlink("AuthenticationSHM");
     munmap(playersAuthentication, sizeof(authentication));
+
+    pthread_t serverJoinThread;
+    pthread_create(&serverJoinThread, NULL, maintainServer, server);
 
     beast beast;
     pthread_t beast_thr;
@@ -111,7 +115,6 @@ void serverRun(infoServer *server) {
             serverInfoPrintPlayers(7, 55, i, okno1, *serverAndThread[i].playerInThread);
         }
         for (int i = 1; i <= 2; i++) {
-            //mvwprintw(okno1, 5 + i, 5 + i, "Server's playerPID: %d", serverAndThread[i].playerInThread->move);
             movePlayer(server->board, serverAndThread[i].playerInThread);
         }
         wrefresh(okno1);
@@ -133,12 +136,17 @@ void serverRun(infoServer *server) {
 
         nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
         server->roundNumber++;
-        werase(okno1);
-        box(okno1, 0, 0);            // Standardowe ramki
-        flushinp();
         for (int i = 1; i <= 2; i++) {
-            serverAndThread[i].playerInThread->isPlayerMoved = 0;
+            if(serverAndThread[i].playerInThread->bushTimer==0) {
+                serverAndThread[i].playerInThread->isPlayerMoved = 0;
+            } else{
+                serverAndThread[i].playerInThread->bushTimer--;
+            }
+            serverAndThread[i].playerInThread->roundNumber = server->roundNumber;
         }
+        werase(okno1);
+        box(okno1, 0, 0);
+        flushinp();
     } while (znak != 'q' && znak != 'Q');
 
     endwin();// Koniec pracy z CURSES
@@ -165,7 +173,7 @@ void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
 void serverInfoPrintPlayers(int y, int x, int i, WINDOW *window, player player) {
     mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player.name);
     mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player.playerPID);
-    mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player.round_number);
+    mvwprintw(window, y + 4, x + 15 + (i * 25), "HUMAN");
     mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player.deaths);
     mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player.pos.x, player.pos.y);
     mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player.coinsCarried);
@@ -222,7 +230,7 @@ void *player_connection(void *playerStruct) {
         memcpy(SHPlayer, pPlayer, sizeof(player));
         sem_post(&SHPlayer->received_data);
     }
-
+    pServerAndThread->infoServer->playersNumber--;
     munmap(SHPlayer, sizeof(player));
     close(fd);
     shm_unlink(shmName);
@@ -256,7 +264,7 @@ int keyFunc(void) {
 void *keyboardInputFunc(void *pKey) {
     keyThreadInfo *info = (keyThreadInfo *) pKey;
 
-    int key = 0;
+    int key;
 
     while (info->key != 'q' && info->key != 'Q') {
         if (keyFunc()) {
@@ -268,4 +276,16 @@ void *keyboardInputFunc(void *pKey) {
     }
 
     return NULL;
+}
+
+void *maintainServer(void *pServer) {
+    infoServer *info = (infoServer *) pServer;
+
+    while (info->playersNumber != 0) {
+    //    printf("%d \n", info->playersNumber);
+        if (info->playersNumber != 2) {
+            printf("%d\n", info->playersNumber);
+        }
+    }
+    printf("działa\n");
 }

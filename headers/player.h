@@ -18,13 +18,12 @@ typedef struct player {
     point spawn_location;
     point pos;
     point campsite_xy;
-    int is_connected;
-    int round_number;
-    int bush_timer;
+    int isConnected;
+    int roundNumber;
+    int bushTimer;
     int ID;
     pid_t playerPID;
     pid_t server_PID;
-    int type;
     int deaths;
     int coinsCarried;
     int coinsInDeposit;
