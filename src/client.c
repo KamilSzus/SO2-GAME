@@ -4,8 +4,6 @@
 #define _GNU_SOURCE
 
 #include <string.h>
-#include <bits/types/wint_t.h>
-#include <wchar.h>
 #include <signal.h>
 #include "../headers/client.h"
 #include "../headers/server.h"
@@ -85,23 +83,27 @@ void connectToServer() {
                 wrefresh(okno1);
 
                 // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
-                mvwprintw(okno1, 5, 5, "Wait for player number: %d", keyInfo.key);
-                wrefresh(okno1);
-                pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
+                if (join_shm->isPlayerMoved == 0) {
+                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
+                    wrefresh(okno1);
+                    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
+                }
                 // }
+
                 join_shm->move = keyInfo.key;
+                keyInfo.key = 0;
                 sem_wait(&join_shm->received_data);
                 sem_post(&join_shm->received_data);
                 sem_post(sem);
-                // flushinp();
+                flushinp();
             } while (join_shm->move != 'q' && join_shm->move != 'Q');
 
             sem_close(sem);
-            munmap(join_shm, sizeof(struct player));
+            munmap(join_shm, sizeof(player));
             shm_unlink("/gameSO2_Join_SHMPlayer1");
             close(fd);
             endwin();// Koniec pracy z CURSES
-            delwin(okno1);        // Usuniecie okien
+            delwin(okno1);// Usuniecie okien
             break;
 
         case 2:
@@ -122,24 +124,29 @@ void connectToServer() {
                                                       MAP_SHARED, fdPlayer2, 0);
             join_shmPlayer2->playerPID = getpid();
 
-            while (1) {
+            do {
                 mapPrintFragment(5, 5, okno1, join_shmPlayer2->map);
                 wrefresh(okno1);
-                join_shmPlayer2->move = wgetch(okno1);
 
-
-                if (join_shmPlayer2->move == 'q') {
-                    break;
+                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
+                if (join_shmPlayer2->isPlayerMoved == 0) {
+                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
+                    wrefresh(okno1);
+                    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
                 }
+                // }
+
+                join_shmPlayer2->move = keyInfo.key;
+                keyInfo.key = 0;
 
                 sem_wait(&join_shmPlayer2->received_data);
                 sem_post(&join_shmPlayer2->received_data);
                 sem_post(semPlayer2);
                 flushinp();
-            }
+            } while (join_shmPlayer2->move != 'q' && join_shmPlayer2->move != 'Q');
 
             sem_close(semPlayer2);
-            munmap(join_shmPlayer2, sizeof(struct player));
+            munmap(join_shmPlayer2, sizeof(player));
             shm_unlink("/gameSO2_Join_SHMPlayer2");
             close(fdPlayer2);
             endwin();// Koniec pracy z CURSES
@@ -165,7 +172,7 @@ void *keyboardInputFuncPlayer(void *pKey) {
     keyThreadInfoPlayer *info = (keyThreadInfoPlayer *) pKey;
 
     int key = 0;
-    if (keyFunc()) {
+    if (keyFuncPlayer()) {
         key = getch();
         pthread_mutex_lock(&info->mutex);
         info->key = key;

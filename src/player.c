@@ -73,7 +73,6 @@ void mapFragment(boardData *src, point spawn, player *player) {
         int src_y = tempY + i;
 
         for (int j = 0; j < 5; ++j) {
-            //int src_x = spawn.x + j;
             int src_x = tempX + j;
 
             if (src_y < 0 || src_x < 0 || src_y >= src->height || src_x >= src->width) {
@@ -105,10 +104,10 @@ void movePlayer(boardData *map, player *player) {
         newPosition.y = player->pos.y;
         newPosition.x = player->pos.x + 1;
     } else if (player->move == 65) {//down
-        newPosition.y = player->pos.y + 1;
+        newPosition.y = player->pos.y - 1;
         newPosition.x = player->pos.x;
     } else if (player->move == 66) {//up
-        newPosition.y = player->pos.y - 1;
+        newPosition.y = player->pos.y + 1;
         newPosition.x = player->pos.x;
     }
 
@@ -132,7 +131,6 @@ void movePlayer(boardData *map, player *player) {
 
             return;
         }
-        //assert(1==2);
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
         if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
