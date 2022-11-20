@@ -16,7 +16,6 @@
 #include "beast.h"
 
 typedef struct infoServer {
-    //player* players;
     int playersNumber;
     int coinNumber;
     int treasureNumber;
@@ -45,7 +44,6 @@ typedef struct serverAndThread {
     infoServer *infoServer;
     player* playerInThread;
     beast * beastInThread;
-    //void * structInThread;
 } serverAndThread;
 
 typedef struct droppedCoins {

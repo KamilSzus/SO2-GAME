@@ -1,10 +1,13 @@
 //
 // Created by kamil on 29.10.2022.
 //
+#define _GNU_SOURCE
 
 #include <string.h>
+#include <signal.h>
 #include "../headers/client.h"
 #include "../headers/server.h"
+#include <pthread.h>
 
 
 void connectToServer() {
@@ -50,6 +53,14 @@ void connectToServer() {
     close(fdAuthentication);
     sem_close(semAuthentication);
 
+    pthread_t keyboardInput;
+    keyThreadInfoPlayer keyInfo;
+    keyInfo.key = 0;
+    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
+    if (pthread_mutex_init(&keyInfo.mutex, NULL) != 0) {
+        return;
+    }
+
     switch (playerID) {
         case 1:
             wrefresh(okno1);
@@ -67,29 +78,32 @@ void connectToServer() {
             player *join_shm = (player *) mmap(NULL, sizeof(player), PROT_WRITE | PROT_READ,
                                                MAP_SHARED, fd, 0);
             join_shm->playerPID = getpid();
-
-            while (1) {
+            do {
                 mapPrintFragment(5, 5, okno1, join_shm->map);
                 wrefresh(okno1);
-                join_shm->move = wgetch(okno1);
 
-
-                if (join_shm->move == 'q') {
-                    break;
+                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
+                if (join_shm->isPlayerMoved == 0) {
+                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
+                    wrefresh(okno1);
+                    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
                 }
+                // }
 
+                join_shm->move = keyInfo.key;
+                keyInfo.key = 0;
                 sem_wait(&join_shm->received_data);
                 sem_post(&join_shm->received_data);
                 sem_post(sem);
                 flushinp();
-            }
+            } while (join_shm->move != 'q' && join_shm->move != 'Q');
 
             sem_close(sem);
-            munmap(join_shm, sizeof(struct player));
+            munmap(join_shm, sizeof(player));
             shm_unlink("/gameSO2_Join_SHMPlayer1");
             close(fd);
             endwin();// Koniec pracy z CURSES
-            delwin(okno1);        // Usuniecie okien
+            delwin(okno1);// Usuniecie okien
             break;
 
         case 2:
@@ -110,24 +124,29 @@ void connectToServer() {
                                                       MAP_SHARED, fdPlayer2, 0);
             join_shmPlayer2->playerPID = getpid();
 
-            while (1) {
+            do {
                 mapPrintFragment(5, 5, okno1, join_shmPlayer2->map);
                 wrefresh(okno1);
-                join_shmPlayer2->move = wgetch(okno1);
 
-
-                if (join_shmPlayer2->move == 'q') {
-                    break;
+                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
+                if (join_shmPlayer2->isPlayerMoved == 0) {
+                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
+                    wrefresh(okno1);
+                    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
                 }
+                // }
+
+                join_shmPlayer2->move = keyInfo.key;
+                keyInfo.key = 0;
 
                 sem_wait(&join_shmPlayer2->received_data);
                 sem_post(&join_shmPlayer2->received_data);
                 sem_post(semPlayer2);
                 flushinp();
-            }
+            } while (join_shmPlayer2->move != 'q' && join_shmPlayer2->move != 'Q');
 
             sem_close(semPlayer2);
-            munmap(join_shmPlayer2, sizeof(struct player));
+            munmap(join_shmPlayer2, sizeof(player));
             shm_unlink("/gameSO2_Join_SHMPlayer2");
             close(fdPlayer2);
             endwin();// Koniec pracy z CURSES
@@ -138,6 +157,30 @@ void connectToServer() {
     }
 }
 
+int keyFuncPlayer(void) {
+    int ch = getch();
+
+    if (ch != ERR) {
+        ungetch(ch);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+void *keyboardInputFuncPlayer(void *pKey) {
+    keyThreadInfoPlayer *info = (keyThreadInfoPlayer *) pKey;
+
+    int key = 0;
+    if (keyFuncPlayer()) {
+        key = getch();
+        pthread_mutex_lock(&info->mutex);
+        info->key = key;
+        pthread_mutex_unlock(&info->mutex);
+    }
+
+    return NULL;
+}
 
 
 

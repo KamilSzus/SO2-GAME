@@ -94,6 +94,10 @@ void serverRun(infoServer *server) {
     keyInfo.key = 0;
     pthread_create(&keyboardInput, NULL, keyboardInputFunc, &keyInfo);
 
+    if (pthread_mutex_init(&keyInfo.mutex, NULL) != 0) {
+        return;
+    }
+
     do {
         pthread_mutex_lock(&keyInfo.mutex);
         znak = keyInfo.key;
@@ -101,20 +105,16 @@ void serverRun(infoServer *server) {
         pthread_mutex_unlock(&keyInfo.mutex);
 
         mapPrint(5, 5, okno1, server->board);
-        //mapPrintFragment(5, 5, okno1, players[1].map);
         serverInfoPrintServer(5, 55, okno1, *server);
         printLegend(19, 55, okno1);
         for (int i = 1; i <= 2; i++) {
             serverInfoPrintPlayers(7, 55, i, okno1, *serverAndThread[i].playerInThread);
         }
-
-        wrefresh(okno1);
-        nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
-        server->roundNumber++;
         for (int i = 1; i <= 2; i++) {
-            mvwprintw(okno1, 5 + i, 5 + i, "Server's playerPID: %d", serverAndThread[i].playerInThread->move);
+            //mvwprintw(okno1, 5 + i, 5 + i, "Server's playerPID: %d", serverAndThread[i].playerInThread->move);
             movePlayer(server->board, serverAndThread[i].playerInThread);
         }
+        wrefresh(okno1);
         if (znak == 'c' && server->coinNumber < 10) {
             generateRandomCoin(server->board);
             server->coinNumber++;
@@ -131,10 +131,14 @@ void serverRun(infoServer *server) {
             pthread_create(&beast_thr, NULL, beastConnection, &serverAndThread[0]);
         }
 
+        nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
+        server->roundNumber++;
         werase(okno1);
         box(okno1, 0, 0);            // Standardowe ramki
         flushinp();
-        //ustawienie klakiszy od nowa
+        for (int i = 1; i <= 2; i++) {
+            serverAndThread[i].playerInThread->isPlayerMoved = 0;
+        }
     } while (znak != 'q' && znak != 'Q');
 
     endwin();// Koniec pracy z CURSES
@@ -237,7 +241,6 @@ void *beastConnection(void *beastStruct) {
     }
 
 }
-
 
 int keyFunc(void) {
     int ch = getch();
