@@ -4,11 +4,9 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "../headers/player.h"
 
 player initPlayer(int i, boardData *board, pid_t serverPID) {
-
     player p = {0};
 
     sprintf(p.name, "Player%d", i);
@@ -36,6 +34,8 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     mapFragment(board, p.spawn_location, &p);
     p.pos = p.spawn_location;
     p.isPlayerMoved = 0;
+    p.isConnected = 0;
+    p.bushTimer = 0;
 
     return p;
 }
@@ -131,6 +131,9 @@ void movePlayer(boardData *map, player *player) {
 
             return;
         }
+        else if(map->map[newPosition.y * map->width + newPosition.x] == '#'){
+            player->bushTimer = 2;
+        }
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
         if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
@@ -163,5 +166,18 @@ void dropGoldAfterDeath(player* player,boardData *map){
     if(player->isDeath==1){
         map->map[player->pos.y * map->width + player->pos.x] = 'D';
         randomPlayerSpawn(player,map);
+    }
+}
+
+void killPlayer(player* playerOne,player* playerTwo,boardData *map){
+    if(playerOne->pos.x == playerTwo->pos.x && playerOne->pos.y == playerTwo->pos.y){
+        map->map[playerOne->pos.y * map->width + playerOne->pos.x] = 'D';
+        playerOne->pos = playerOne->spawn_location;
+        playerTwo->pos = playerTwo->spawn_location;
+
+        mapFragment(map, playerOne->spawn_location, playerOne);
+        *(map->map + playerOne->spawn_location.y * map->width + playerOne->spawn_location.x) = playerOne->ID + '0';
+        mapFragment(map, playerTwo->spawn_location, playerTwo);
+        *(map->map + playerTwo->spawn_location.y * map->width + playerTwo->spawn_location.x) = playerTwo->ID + '0';
     }
 }

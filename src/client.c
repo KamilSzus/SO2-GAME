@@ -80,15 +80,14 @@ void connectToServer() {
             join_shm->playerPID = getpid();
             do {
                 mapPrintFragment(5, 5, okno1, join_shm->map);
+                clientInfoPrintServer(5, 55, okno1, *join_shm);
+                printLegend(19, 55, okno1);
+                clientInfoPrintPlayers(7, 55, 1, okno1, *join_shm);
                 wrefresh(okno1);
 
-                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
                 if (join_shm->isPlayerMoved == 0) {
-                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
-                    wrefresh(okno1);
                     pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
                 }
-                // }
 
                 join_shm->move = keyInfo.key;
                 keyInfo.key = 0;
@@ -126,19 +125,17 @@ void connectToServer() {
 
             do {
                 mapPrintFragment(5, 5, okno1, join_shmPlayer2->map);
+                clientInfoPrintServer(5, 55, okno1, *join_shmPlayer2);
+                printLegend(19, 55, okno1);
+                clientInfoPrintPlayers(7, 55, 1, okno1, *join_shmPlayer2);
                 wrefresh(okno1);
 
-                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
                 if (join_shmPlayer2->isPlayerMoved == 0) {
-                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
-                    wrefresh(okno1);
                     pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
                 }
-                // }
 
                 join_shmPlayer2->move = keyInfo.key;
                 keyInfo.key = 0;
-
                 sem_wait(&join_shmPlayer2->received_data);
                 sem_post(&join_shmPlayer2->received_data);
                 sem_post(semPlayer2);
@@ -182,7 +179,28 @@ void *keyboardInputFuncPlayer(void *pKey) {
     return NULL;
 }
 
+void clientInfoPrintPlayers(int y, int x, int i, WINDOW *window, player player) {
+    mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player.name);
+    mvwprintw(window, y + 3, x + 15 + (i * 25), "HUMAN");
+    mvwprintw(window, y + 4, x + 15 + (i * 25), "%d", player.deaths);
+    mvwprintw(window, y + 5, x + 15 + (i * 25), "%d/%d", player.pos.x, player.pos.y);
+    mvwprintw(window, y + 7, x + 15 + (i * 25), "%d", player.coinsCarried);
+    mvwprintw(window, y + 8, x + 15 + (i * 25), "%d", player.coinsInDeposit);
+}
 
+void clientInfoPrintServer(int y, int x, WINDOW *window, player player) {
+    mvwprintw(window, y++, x, "Server's: %d", player.server_PID);
+    mvwprintw(window, y++, x + 1, "Campsite X/Y: unknown");
+    mvwprintw(window, y++, x + 1, "Round number: %d", player.roundNumber);
+    y++;
+    mvwprintw(window, y++, x, "Player:   ");
+    mvwprintw(window, y++, x + 1, "Type:       ");
+    mvwprintw(window, y++, x + 1, "Deaths:       ");
+    mvwprintw(window, y++, x + 1, "Curr X/Y:     ");
+    mvwprintw(window, y++, x, "Coins        ");
+    mvwprintw(window, y++, x + 1, "carried       ");
+    mvwprintw(window, y, x + 1, "brought       ");
+}
 
 
 

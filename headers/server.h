@@ -42,14 +42,14 @@ typedef struct keyThreadInfo {
 typedef struct serverAndThread {
     int id;
     infoServer *infoServer;
-    player* playerInThread;
-    beast * beastInThread;
+    player *playerInThread;
+    beast *beastInThread;
 } serverAndThread;
 
 typedef struct droppedCoins {
     point collisionLocalization;
     int coins;
-}droppedCoins;
+} droppedCoins;
 
 infoServer *serverInit();
 
@@ -67,6 +67,8 @@ void *beastConnection(void *beastStruct);
 
 int keyFunc(void);
 
-void* keyboardInputFunc(void* pkey);
+void *keyboardInputFunc(void *pkey);
+
+void *maintainServer(void *pServer);
 
 #endif //SO2_SERVER_H

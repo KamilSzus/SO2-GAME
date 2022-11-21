@@ -18,13 +18,12 @@ typedef struct player {
     point spawn_location;
     point pos;
     point campsite_xy;
-    int is_connected;
-    int round_number;
-    int bush_timer;
+    int isConnected;
+    int roundNumber;
+    int bushTimer;
     int ID;
     pid_t playerPID;
     pid_t server_PID;
-    int type;
     int deaths;
     int coinsCarried;
     int coinsInDeposit;
@@ -43,18 +42,17 @@ void mapFragment(boardData *src, point spawn, player *player);
 
 void movePlayer(boardData *map, player *player);
 
-void addOneCoin(player* player);
+void addOneCoin(player *player);
 
-void addSmallTreasure(player* player);
+void addSmallTreasure(player *player);
 
-void addLargeTreasure(player* player);
+void addLargeTreasure(player *player);
 
-void depositGold(player* player);
+void depositGold(player *player);
 
-void killPlayer(player* player,boardData *map);
+void killPlayer(player *playerOne, player *playerTwo, boardData *map);
 
-void dropGoldAfterDeath(player* player,boardData *map);
-
+void dropGoldAfterDeath(player *player, boardData *map);
 
 
 #endif //SO2_PLAYER_H
