@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "../headers/beast.h"
 
-beast initBeast(boardData *board, pid_t serverPID) {
+beast initBeast(boardData *board) {
 
     beast beast = {0};
 
@@ -19,8 +19,7 @@ beast initBeast(boardData *board, pid_t serverPID) {
     point camp;
     camp.x = board->width;
     camp.y = board->height;
-
-    beast.server_PID = serverPID;
+    beast.isBeastHunt = 0;
     randomBeastSpawn(&beast, board);
     mapFragmentBeast(board, beast.spawn_location, &beast);
     beast.pos = beast.spawn_location;
@@ -87,7 +86,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x;
             newPosition->y = pBeast->pos.y - i;
             return 0;
@@ -101,7 +100,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x;
             newPosition->y = pBeast->pos.y + i;
             return 0;
@@ -115,7 +114,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y;
             return 0;
@@ -129,7 +128,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y;
             return 0;
@@ -143,7 +142,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y - i;
             return 0;
@@ -157,7 +156,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y - i;
             return 0;
@@ -171,7 +170,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y - i;
             return 0;
@@ -185,7 +184,7 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '@') {
             break;
         }
-        if (temp > 0 && temp <= 2) {
+        if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y + i;
             return 0;
@@ -195,8 +194,10 @@ int beastPull(beast *pBeast, point *newPosition) {
     return 1;
 }
 
-void beastMove(beast *beastStruct, point *newPos){
+void beastMove(beast *beastStruct, point *newPos, boardData *map) {
 
+    map->map[newPos->y * map->width + newPos->x] = '*';
+    map->map[newPos->y * map->width + newPos->x] = ' ';
     beastStruct->pos = *newPos;
 
 }

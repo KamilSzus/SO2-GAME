@@ -42,18 +42,17 @@ void mapFragment(boardData *src, point spawn, player *player);
 
 void movePlayer(boardData *map, player *player);
 
-void addOneCoin(player* player);
+void addOneCoin(player *player);
 
-void addSmallTreasure(player* player);
+void addSmallTreasure(player *player);
 
-void addLargeTreasure(player* player);
+void addLargeTreasure(player *player);
 
-void depositGold(player* player);
+void depositGold(player *player);
 
-void killPlayer(player* player,boardData *map);
+void killPlayer(player *playerOne, player *playerTwo, boardData *map);
 
-void dropGoldAfterDeath(player* player,boardData *map);
-
+void dropGoldAfterDeath(player *player, boardData *map);
 
 
 #endif //SO2_PLAYER_H

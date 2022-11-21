@@ -85,13 +85,9 @@ void connectToServer() {
                 clientInfoPrintPlayers(7, 55, 1, okno1, *join_shm);
                 wrefresh(okno1);
 
-                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
                 if (join_shm->isPlayerMoved == 0) {
-                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
-                    wrefresh(okno1);
                     pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
                 }
-                // }
 
                 join_shm->move = keyInfo.key;
                 keyInfo.key = 0;
@@ -134,17 +130,12 @@ void connectToServer() {
                 clientInfoPrintPlayers(7, 55, 1, okno1, *join_shmPlayer2);
                 wrefresh(okno1);
 
-                // if (pthread_tryjoin_np(keyboardInput, (void *) &keyInfo) == 0) {
                 if (join_shmPlayer2->isPlayerMoved == 0) {
-                    mvwprintw(okno1, 20, 20, "Wait for player number: %d", keyInfo.key);
-                    wrefresh(okno1);
                     pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
                 }
-                // }
 
                 join_shmPlayer2->move = keyInfo.key;
                 keyInfo.key = 0;
-
                 sem_wait(&join_shmPlayer2->received_data);
                 sem_post(&join_shmPlayer2->received_data);
                 sem_post(semPlayer2);

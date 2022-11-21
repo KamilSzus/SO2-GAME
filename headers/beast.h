@@ -16,19 +16,12 @@ typedef struct beast {
     point world_size;
     point spawn_location;
     point pos;
-    int is_connected;
-    int round_number;
-    int bush_timer;
-    int ID;
-    pid_t server_PID;
-    int type;
-    int move;
-    int isBeastMoved;
+    int isBeastHunt;
     char map[25];
 } beast;
 
 
-beast initBeast(boardData *board, pid_t serverPID);
+beast initBeast(boardData *board);
 
 void randomBeastSpawn(beast *pBeast, boardData *board);
 
@@ -36,7 +29,7 @@ void mapFragmentBeast(boardData *board, point point, beast *pBeast);
 
 int beastPull(beast *pBeast, point *newPosition);
 
-void beastMove(beast *beastStruct, point *newPos);
+void beastMove(beast *beastStruct, point *newPos, boardData *map);
 
 
 #endif //SO2_BEAST_H
