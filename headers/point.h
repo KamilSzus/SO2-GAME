@@ -8,6 +8,8 @@
 typedef struct point {
     int x;
     int y;
-}point;
+} point;
+
+int isEqual(point one, point two);
 
 #endif //SO2_POINT_H

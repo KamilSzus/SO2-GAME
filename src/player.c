@@ -17,7 +17,7 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     p.ID = i;
 
     point worldSize;
-    worldSize.x=board->width;
+    worldSize.x = board->width;
     worldSize.y = board->height;
 
     p.world_size = worldSize;
@@ -91,7 +91,7 @@ void mapFragment(boardData *src, point spawn, player *player) {
 }
 
 void movePlayer(boardData *map, player *player) {
-    if (!map || !player || player->isPlayerMoved!=0) {
+    if (!map || !player || player->isPlayerMoved != 0) {
         return;
     }
 
@@ -130,9 +130,14 @@ void movePlayer(boardData *map, player *player) {
             player->isPlayerMoved = 1;
 
             return;
-        }
-        else if(map->map[newPosition.y * map->width + newPosition.x] == '#'){
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == '#') {
             player->bushTimer = 2;
+        } else if (map->map[newPosition.y * map->width + newPosition.x] == 'D') {
+            for (int i = 0; i < map->lastIndexArray; i++) {
+                if (isEqual(newPosition, map->droppedCoins[i].collisionLocalization) == 1) {
+                    player->coinsCarried += map->droppedCoins[0].coins;
+                }
+            }
         }
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
         if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
@@ -146,32 +151,32 @@ void movePlayer(boardData *map, player *player) {
 }
 
 void addOneCoin(player *player) {
-    player->coinsInDeposit++;
+    player->coinsCarried++;
 }
 
 void addSmallTreasure(player *player) {
-    player->coinsInDeposit += 5;
+    player->coinsCarried += 5;
 }
 
 void addLargeTreasure(player *player) {
-    player->coinsInDeposit += 10;
+    player->coinsCarried += 10;
 }
 
 void depositGold(player *player) {
-    player->coinsCarried = player->coinsInDeposit;
-    player->coinsInDeposit = 0;
+    player->coinsInDeposit = player->coinsCarried;
+    player->coinsCarried = 0;
 }
 
-void dropGoldAfterDeath(player* player,boardData *map){
-    if(player->isDeath==1){
+void dropGoldAfterDeath(player *player, boardData *map) {
+    if (player->isDeath == 1) {
         map->map[player->pos.y * map->width + player->pos.x] = 'D';
-        randomPlayerSpawn(player,map);
+        randomPlayerSpawn(player, map);
     }
 }
 
-void killPlayer(player* playerOne,player* playerTwo,boardData *map){
-    if(playerOne->pos.x == playerTwo->pos.x && playerOne->pos.y == playerTwo->pos.y){
-        map->map[playerOne->pos.y * map->width + playerOne->pos.x] = 'D';
+void killPlayer(player *playerOne, player *playerTwo, boardData *map) {
+    if (playerOne->pos.x == playerTwo->pos.x && playerOne->pos.y == playerTwo->pos.y) {
+        point col = playerOne->pos;
         playerOne->pos = playerOne->spawn_location;
         playerTwo->pos = playerTwo->spawn_location;
 
@@ -179,5 +184,23 @@ void killPlayer(player* playerOne,player* playerTwo,boardData *map){
         *(map->map + playerOne->spawn_location.y * map->width + playerOne->spawn_location.x) = playerOne->ID + '0';
         mapFragment(map, playerTwo->spawn_location, playerTwo);
         *(map->map + playerTwo->spawn_location.y * map->width + playerTwo->spawn_location.x) = playerTwo->ID + '0';
+
+        int possibleValue = playerOne->coinsCarried + playerTwo->coinsCarried;
+
+        playerOne->coinsCarried = 0;
+        playerTwo->coinsCarried = 0;
+
+        playerOne->deaths++;
+        playerTwo->deaths++;
+
+        if (possibleValue > 0) {
+            map->map[col.y * map->width + col.x] = 'D';
+            droppedCoins dc = {0};
+            dc.collisionLocalization = col;
+            dc.coins = possibleValue;
+            map->droppedCoins[map->lastIndexArray] = dc;
+            map->lastIndexArray++;
+        }
+
     }
 }

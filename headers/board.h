@@ -3,12 +3,17 @@
 #ifndef SO2_BOARD_H
 #define SO2_BOARD_H
 
-
 #include <curses.h>
 #include <ncurses.h>
 #include <malloc.h>
 #include <sys/types.h>
 #include <semaphore.h>
+#include "point.h"
+
+typedef struct droppedCoins {
+    point collisionLocalization;
+    int coins;
+} droppedCoins;
 
 typedef struct {
     char *map;
@@ -16,8 +21,9 @@ typedef struct {
     int campLocationY;
     int width;
     int height;
+    droppedCoins droppedCoins[200];
+    int lastIndexArray;
 } boardData;
-
 
 boardData *mapLoad(char *filename);
 
