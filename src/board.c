@@ -3,7 +3,6 @@
 //
 #include <stdlib.h>
 #include "../headers/board.h"
-#include "../headers/point.h"
 
 boardData *mapLoad(char *filename) {
     FILE *file = fopen(filename, "r");
@@ -34,6 +33,7 @@ boardData *mapLoad(char *filename) {
         }
         map->map[i++] = temp;
     }
+    map->lastIndexArray = 0;
 
     fclose(file);
     return map;
@@ -50,6 +50,11 @@ void mapPrint(int y, int x, WINDOW *window, boardData *map) {
             mvwprintw(window, i + y, j + x, "%c", object);
             attroff(COLOR_PAIR(object));
         }
+    }
+    if (map->lastIndexArray != 0) {
+        mvwprintw(window, 25, 25, "%d", map->droppedCoins[0].coins);
+        mvwprintw(window, 26, 26, "%d %d", map->droppedCoins[0].collisionLocalization.y,
+                  map->droppedCoins[0].collisionLocalization.x);
     }
 }
 

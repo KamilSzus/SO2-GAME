@@ -310,6 +310,36 @@ src/player.c.s:
 	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/player.c.s
 .PHONY : src/player.c.s
 
+src/point.o: src/point.c.o
+
+.PHONY : src/point.o
+
+# target to build an object file
+src/point.c.o:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/point.c.o
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/point.c.o
+.PHONY : src/point.c.o
+
+src/point.i: src/point.c.i
+
+.PHONY : src/point.i
+
+# target to preprocess a source file
+src/point.c.i:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/point.c.i
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/point.c.i
+.PHONY : src/point.c.i
+
+src/point.s: src/point.c.s
+
+.PHONY : src/point.s
+
+# target to generate assembly for a file
+src/point.c.s:
+	$(MAKE) -f CMakeFiles/SO2Client.dir/build.make CMakeFiles/SO2Client.dir/src/point.c.s
+	$(MAKE) -f CMakeFiles/SO2.dir/build.make CMakeFiles/SO2.dir/src/point.c.s
+.PHONY : src/point.c.s
+
 src/server.o: src/server.c.o
 
 .PHONY : src/server.o
@@ -368,6 +398,9 @@ help:
 	@echo "... src/player.o"
 	@echo "... src/player.i"
 	@echo "... src/player.s"
+	@echo "... src/point.o"
+	@echo "... src/point.i"
+	@echo "... src/point.s"
 	@echo "... src/server.o"
 	@echo "... src/server.i"
 	@echo "... src/server.s"

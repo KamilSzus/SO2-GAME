@@ -46,11 +46,6 @@ typedef struct serverAndThread {
     beast *beastInThread;
 } serverAndThread;
 
-typedef struct droppedCoins {
-    point collisionLocalization;
-    int coins;
-} droppedCoins;
-
 infoServer *serverInit();
 
 void serverRun(infoServer *server);
