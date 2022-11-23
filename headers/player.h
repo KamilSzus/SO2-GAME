@@ -17,8 +17,6 @@ typedef struct player {
     point world_size;
     point spawn_location;
     point pos;
-    point campsite_xy;
-    int isConnected;
     int roundNumber;
     int bushTimer;
     int ID;
@@ -31,6 +29,7 @@ typedef struct player {
     int isPlayerMoved;
     char map[25];
     int isDeath;
+    int wasInBush;
 } player;
 
 

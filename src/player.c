@@ -2,7 +2,6 @@
 // Created by kamil on 31.10.2022.
 //
 
-#include <unistd.h>
 #include <stdlib.h>
 #include "../headers/player.h"
 
@@ -24,18 +23,13 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     p.coinsInDeposit = 0;
     p.coinsCarried = 0;
 
-    point camp;
-    camp.x = board->width;
-    camp.y = board->height;
-
-    p.campsite_xy = camp;
     p.server_PID = serverPID;
     randomPlayerSpawn(&p, board);
     mapFragment(board, p.spawn_location, &p);
     p.pos = p.spawn_location;
     p.isPlayerMoved = 0;
-    p.isConnected = 0;
     p.bushTimer = 0;
+    p.wasInBush = 0;
 
     return p;
 }
@@ -113,6 +107,13 @@ void movePlayer(boardData *map, player *player) {
 
     //tymczasowe
     if (player->move == 68 || player->move == 67 || player->move == 65 || player->move == 66) {
+        if (player->wasInBush == 1) {
+            if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
+                return;
+            }
+            map->map[player->pos.y * map->width + player->pos.x] = '#';
+            player->wasInBush = 0;
+        }
         if (map->map[newPosition.y * map->width + newPosition.x] == '@') {
             return;
         } else if (map->map[newPosition.y * map->width + newPosition.x] == 'c') {
@@ -132,6 +133,7 @@ void movePlayer(boardData *map, player *player) {
             return;
         } else if (map->map[newPosition.y * map->width + newPosition.x] == '#') {
             player->bushTimer = 2;
+            player->wasInBush = 1;
         } else if (map->map[newPosition.y * map->width + newPosition.x] == 'D') {
             for (int i = 0; i < map->lastIndexArray; i++) {
                 if (isEqual(newPosition, map->droppedCoins[i].collisionLocalization) == 1) {
@@ -140,7 +142,8 @@ void movePlayer(boardData *map, player *player) {
             }
         }
         map->map[newPosition.y * map->width + newPosition.x] = player->ID + '0';
-        if (map->map[player->pos.y * map->width + player->pos.x] != 'C') {
+        if (map->map[player->pos.y * map->width + player->pos.x] != 'C' &&
+            map->map[player->pos.y * map->width + player->pos.x] != '#') {
             map->map[player->pos.y * map->width + player->pos.x] = ' ';
         }
 

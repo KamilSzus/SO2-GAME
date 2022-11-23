@@ -20,6 +20,8 @@ infoServer *serverInit() {
     server->coinNumber = 0;
     server->treasureNumber = 0;
     server->roundNumber = 0;
+    server->isPlayerOneConnected = 0;
+    server->isPlayerTwoConnected = 0;
     sem_init(&server->update, 0, 1);
 
     return server;
@@ -37,10 +39,6 @@ void serverRun(infoServer *server) {
         serverAndThread[i].playerInThread = &players[i];
         pthread_create(&player_thr[i], NULL, player_connection, &serverAndThread[i]);
     }
-    sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
-    if (sem == SEM_FAILED) {
-        return;
-    }
 
     setlocale(LC_ALL, "");
     WINDOW *okno1;    // Okna programu
@@ -55,40 +53,9 @@ void serverRun(infoServer *server) {
     okno1 = newwin(LINES, COLS, 0, 0);
     box(okno1, 0, 0);
     wrefresh(okno1);
-    int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
-    ftruncate(fd, sizeof(authentication));
-    authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
-                                                                    PROT_READ | PROT_WRITE,
-                                                                    MAP_SHARED, fd, 0);
-    assert (playersAuthentication != MAP_FAILED);
 
-    playersAuthentication->playerNumber = 1;
-    sem_init(&playersAuthentication->authenticationPost, 1, 1);
-    sem_init(&playersAuthentication->authenticationStartGame, 1, 0);
-
-    while (playersAuthentication->playerNumber != 3) {
-        mvwprintw(okno1, 5, 5, "Wait for player number: %d", playersAuthentication->playerNumber);
-        wrefresh(okno1);
-        sem_wait(sem);
-        sem_wait(&playersAuthentication->authenticationPost);
-
-        playersAuthentication->playerNumber++;
-
-        sem_post(&playersAuthentication->authenticationPost);
-    }
-
-    for (int i = 0; i < 2; i++) {
-        sem_post(&playersAuthentication->authenticationStartGame);
-        server->playersNumber++;
-    }
-
-    sem_close(sem);
-    close(fd);
-    shm_unlink("AuthenticationSHM");
-    munmap(playersAuthentication, sizeof(authentication));
-
-    pthread_t serverJoinThread;
-    pthread_create(&serverJoinThread, NULL, maintainServer, server);
+    pthread_t authenticationThread;
+    pthread_create(&authenticationThread, NULL, authenticationThreadFunc, NULL);
 
     beast beast;
     pthread_t beast_thr;
@@ -150,12 +117,12 @@ void serverRun(infoServer *server) {
             serverAndThread[i].playerInThread->roundNumber = server->roundNumber;
         }
 
-        killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,serverAndThread[1].infoServer->board);
+        killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
+                   serverAndThread[1].infoServer->board);
         if (beastHunt == 1) {
             mapFragmentBeast(serverAndThread[0].infoServer->board, serverAndThread[0].beastInThread->pos,
                              serverAndThread[0].beastInThread);
         }
-
 
         werase(okno1);
         box(okno1, 0, 0);
@@ -232,10 +199,16 @@ void *player_connection(void *playerStruct) {
 
     sem_init(&SHPlayer->received_data, 1, 1); // shared, signaled
 
+    if (pServerAndThread->id == 1) {
+        pServerAndThread->infoServer->isPlayerOneConnected = 1;
+    } else if (pServerAndThread->id == 2) {
+        pServerAndThread->infoServer->isPlayerTwoConnected = 1;
+
+    }
+
     while (SHPlayer->move != 'q') {
         sem_wait(sem);
         sem_wait(&SHPlayer->received_data);
-        dropGoldAfterDeath(pPlayer, pServerAndThread->infoServer->board);
         mapFragment(pServerAndThread->infoServer->board, pPlayer->pos, pPlayer);
         pPlayer->move = SHPlayer->move;
         movePlayer(pServerAndThread->infoServer->board, pPlayer);
@@ -244,6 +217,14 @@ void *player_connection(void *playerStruct) {
         sem_post(&SHPlayer->received_data);
     }
     pServerAndThread->infoServer->playersNumber--;
+
+    if (pServerAndThread->id == 1) {
+        pServerAndThread->infoServer->isPlayerOneConnected = 0;
+    } else if (pServerAndThread->id == 2) {
+        pServerAndThread->infoServer->isPlayerTwoConnected = 0;
+
+    }
+
     munmap(SHPlayer, sizeof(player));
     close(fd);
     shm_unlink(shmName);
@@ -293,46 +274,28 @@ void *keyboardInputFunc(void *pKey) {
     return NULL;
 }
 
-void *maintainServer(void *pServer) {
-    infoServer *info = (infoServer *) pServer;
+void *authenticationThreadFunc(void *pServer) {
 
-    while (info->playersNumber != 0) {
-        //    printf("%d \n", info->playersNumber);
-        if (info->playersNumber != 2) {
-            sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
-            if (sem == SEM_FAILED) {
-                return NULL;
-            }
-
-            int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
-            ftruncate(fd, sizeof(authentication));
-            authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
-                                                                            PROT_READ | PROT_WRITE,
-                                                                            MAP_SHARED, fd, 0);
-            assert (playersAuthentication != MAP_FAILED);
-            printf("%d\n", info->playersNumber);
-
-            playersAuthentication->playerNumber = 1;
-            sem_init(&playersAuthentication->authenticationPost, 1, 1);
-            sem_init(&playersAuthentication->authenticationStartGame, 1, 0);
-
-            sem_wait(sem);
-            sem_wait(&playersAuthentication->authenticationPost);
-
-            playersAuthentication->playerNumber++;
-
-            sem_post(&playersAuthentication->authenticationPost);
-
-            sem_post(&playersAuthentication->authenticationStartGame);
-            info->playersNumber++;
-
-            //trzeba dodac rozroznienie klienta
-
-            sem_close(sem);
-            close(fd);
-            shm_unlink("AuthenticationSHM");
-            munmap(playersAuthentication, sizeof(authentication));
-        }
+    sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
+    if (sem == SEM_FAILED) {
+        return NULL;
     }
-    printf("działa\n");
+    int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    ftruncate(fd, sizeof(authentication));
+    authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
+                                                                    PROT_READ | PROT_WRITE,
+                                                                    MAP_SHARED, fd, 0);
+    assert (playersAuthentication != MAP_FAILED);
+
+    playersAuthentication->playerNumber = 1;
+    sem_init(&playersAuthentication->authenticationPost, 1, 1);
+
+    while (playersAuthentication->playerNumber != 3) {
+        sem_wait(sem);
+        sem_wait(&playersAuthentication->authenticationPost);
+
+        playersAuthentication->playerNumber++;
+
+        sem_post(&playersAuthentication->authenticationPost);
+    }
 }
