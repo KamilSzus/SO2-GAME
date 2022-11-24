@@ -12,17 +12,6 @@
 
 void connectToServer() {
 
-    setlocale(LC_ALL, "");
-    start_color();
-    WINDOW *okno1;    // Okna programu
-
-    initscr();    // Rozpoczecie pracy z biblioteka CURSES
-    curs_set(0);    // Nie wyswietlaj kursora
-    noecho();    // Nie wyswietlaj znakow z klawiatury
-    init_colors();
-
-    okno1 = newwin(LINES, COLS, 0, 0);
-    box(okno1, 0, 0);            // Standardowe ramki
 
     sem_t *semAuthentication = sem_open("/Authentication", 0);
     if (semAuthentication == SEM_FAILED) {
@@ -40,18 +29,20 @@ void connectToServer() {
 
     int playerID = playerAuthentication->playerNumber;
 
-    mvwprintw(okno1, 5, 5, "Wait for player number: %d", playerID);
-    wrefresh(okno1);
-
     sem_post(&playerAuthentication->authenticationPost);
     sem_post(semAuthentication);
-    sem_wait(&playerAuthentication->authenticationStartGame);
-    werase(okno1);
 
-    munmap(playerAuthentication, sizeof(authentication));
-    shm_unlink("/AuthenticationSHM");
-    close(fdAuthentication);
-    sem_close(semAuthentication);
+    setlocale(LC_ALL, "");
+    start_color();
+    WINDOW *okno1;    // Okna programu
+
+    initscr();    // Rozpoczecie pracy z biblioteka CURSES
+    curs_set(0);    // Nie wyswietlaj kursora
+    noecho();    // Nie wyswietlaj znakow z klawiatury
+    init_colors();
+
+    okno1 = newwin(LINES, COLS, 0, 0);
+    box(okno1, 0, 0);            // Standardowe ramki
 
     pthread_t keyboardInput;
     keyThreadInfoPlayer keyInfo;
@@ -152,6 +143,12 @@ void connectToServer() {
         default:
             return;
     }
+
+    munmap(playerAuthentication, sizeof(authentication));
+    shm_unlink("/AuthenticationSHM");
+    close(fdAuthentication);
+    sem_close(semAuthentication);
+
 }
 
 int keyFuncPlayer(void) {

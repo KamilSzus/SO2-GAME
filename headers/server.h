@@ -25,13 +25,14 @@ typedef struct infoServer {
     boardData *board;
     pthread_mutex_t mutex;
     sem_t update;
+    int isPlayerOneConnected;
+    int isPlayerTwoConnected;
 
 } infoServer;
 
 typedef struct authentication {
     int playerNumber;
     sem_t authenticationPost;
-    sem_t authenticationStartGame;
 } authentication;
 
 typedef struct keyThreadInfo {
@@ -65,5 +66,7 @@ int keyFunc(void);
 void *keyboardInputFunc(void *pkey);
 
 void *maintainServer(void *pServer);
+
+void *authenticationThreadFunc(void *pServer);
 
 #endif //SO2_SERVER_H
