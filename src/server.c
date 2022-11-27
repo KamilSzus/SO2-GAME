@@ -126,11 +126,19 @@ void serverRun(infoServer *server) {
         if (beastHunt == 1) {
             mapFragmentBeast(serverAndThread[0].infoServer->board, serverAndThread[0].beastInThread->pos,
                              serverAndThread[0].beastInThread);
-            serverAndThread[0].beastInThread->isBeastMoved = 0;
+
+            if (serverAndThread[0].beastInThread->bushTimer == 0) {
+                serverAndThread[0].beastInThread->isBeastMoved = 0;
+            } else {
+                serverAndThread[0].beastInThread->bushTimer--;
+            }
+
+
         }
 
         killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
                    serverAndThread[0].beastInThread, serverAndThread[1].infoServer->board);
+        //dodac jak oboje sa w camp
 
 
         werase(okno1);
@@ -267,10 +275,10 @@ void *beastConnection(void *beastStruct) {
 
     point newPos;
     while (1) {
-        if(pServerAndThread->beastInThread->isBeastMoved==0) {
+        if (pServerAndThread->beastInThread->isBeastMoved == 0) {
             if (beastPull(pBeast, &newPos, pServerAndThread->infoServer->board) == 0) {
                 beastMove(pBeast, &newPos, pServerAndThread->infoServer->board);
-            }else{
+            } else {
                 beastRandomMove(pBeast, pServerAndThread->infoServer->board);
             }
         }

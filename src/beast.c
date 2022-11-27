@@ -11,7 +11,6 @@ beast initBeast(boardData *board) {
 
     sem_init(&beast.receivedData, 0, 0);
 
-
     beast.worldSize.y = board->height;
     beast.worldSize.x = board->width;
 
@@ -23,6 +22,13 @@ beast initBeast(boardData *board) {
     mapFragmentBeast(board, beast.spawnLocation, &beast);
     beast.pos = beast.spawnLocation;
     beast.isBeastMoved = 1;
+    beast.wasInBush = 0;
+    beast.isBestOnCoin = 0;
+    beast.isBestOnSmallTreasure = 0;
+    beast.isBestOnLargeTreasure = 0;
+    beast.isBestOnCampsite = 0;
+    beast.isBestOnDrop = 0;
+    beast.bushTimer = 0;
 
     return beast;
 }
@@ -76,6 +82,7 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
     //..*..
     //.....
     //.....
+    //bestia porusza sie o 2
     if (!pBeast) {
         return 2;
     }
@@ -196,17 +203,64 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
 
 void beastMove(beast *beastStruct, point *newPos, boardData *map) {
     if (beastStruct->isBeastMoved == 0) {
+
+        if (beastStruct->isBestOnCoin == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'c';
+            beastStruct->isBestOnCoin = 0;
+        } else if (beastStruct->isBestOnSmallTreasure == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 't';
+            beastStruct->isBestOnSmallTreasure = 0;
+        } else if (beastStruct->isBestOnLargeTreasure == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'T';
+            beastStruct->isBestOnLargeTreasure = 0;
+        } else if (beastStruct->isBestOnCampsite == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'C';
+            beastStruct->isBestOnCampsite = 0;
+        } else if (beastStruct->isBestOnDrop == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'D';
+            beastStruct->isBestOnDrop = 0;
+        }
+
+        if (beastStruct->wasInBush == 1) {
+            if (map->map[newPos->y * map->width + newPos->x] == '@') {
+                return;
+            }
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = '#';
+            beastStruct->wasInBush = 0;
+        }
+
+        if (map->map[newPos->y * map->width + newPos->x] == '@') {
+            return;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'c') {
+            beastStruct->isBestOnCoin = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 't') {
+            beastStruct->isBestOnSmallTreasure = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'T') {
+            beastStruct->isBestOnLargeTreasure = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'C') {
+            beastStruct->isBestOnCampsite = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == '#') {
+            beastStruct->bushTimer = 2;
+            beastStruct->wasInBush = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'D') {
+            beastStruct->isBestOnDrop = 1;
+        }
+
         map->map[newPos->y * map->width + newPos->x] = '*';
-        map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = ' ';
+        if (map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] != 'C' &&
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] != '#') {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = ' ';
+        }
+
         beastStruct->pos = *newPos;
         beastStruct->isBeastMoved = 1;
+
     }
 }
 
 void beastRandomMove(beast *pBeast, boardData *board) {
     int directory = rand() % (4) + 1;
     point newPos = pBeast->pos;
-
 
     switch (directory) {
         case 1:

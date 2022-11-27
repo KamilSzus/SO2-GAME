@@ -17,7 +17,14 @@ typedef struct beast {
     point pos;
     int isBeastHunt;
     int isBeastMoved;
+    int wasInBush;
+    int isBestOnCoin;
+    int isBestOnSmallTreasure;
+    int isBestOnLargeTreasure;
+    int isBestOnCampsite;
+    int isBestOnDrop;
     char map[25];
+    int bushTimer;
 } beast;
 
 
