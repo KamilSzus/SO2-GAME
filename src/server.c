@@ -7,6 +7,7 @@
 #include "../headers/server.h"
 #include <errno.h>
 
+
 infoServer *serverInit() {
 
     infoServer *server = (infoServer *) calloc(1, sizeof(infoServer));
@@ -269,6 +270,8 @@ void *beastConnection(void *beastStruct) {
         if(pServerAndThread->beastInThread->isBeastMoved==0) {
             if (beastPull(pBeast, &newPos, pServerAndThread->infoServer->board) == 0) {
                 beastMove(pBeast, &newPos, pServerAndThread->infoServer->board);
+            }else{
+                beastRandomMove(pBeast, pServerAndThread->infoServer->board);
             }
         }
     }
@@ -288,7 +291,6 @@ int keyFunc(void) {
 
 void *keyboardInputFunc(void *pKey) {
     keyThreadInfo *info = (keyThreadInfo *) pKey;
-
     int key;
 
     while (info->key != 'q' && info->key != 'Q') {
@@ -382,7 +384,6 @@ void *reConnectPlayerTwo(void *pServer) {
 
     sem_wait(sem);
     sem_wait(&playersAuthentication->authenticationPost);
-
 
     sem_post(&playersAuthentication->authenticationPost);
 

@@ -195,10 +195,35 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
 }
 
 void beastMove(beast *beastStruct, point *newPos, boardData *map) {
-    if(beastStruct->isBeastMoved == 0) {
+    if (beastStruct->isBeastMoved == 0) {
         map->map[newPos->y * map->width + newPos->x] = '*';
         map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = ' ';
         beastStruct->pos = *newPos;
         beastStruct->isBeastMoved = 1;
     }
+}
+
+void beastRandomMove(beast *pBeast, boardData *board) {
+    int directory = rand() % (4) + 1;
+    point newPos = pBeast->pos;
+
+
+    switch (directory) {
+        case 1:
+            newPos.x = newPos.x - 1;
+            break;
+        case 2:
+            newPos.y = newPos.y - 1;
+            break;
+        case 3:
+            newPos.x = newPos.x + 1;
+            break;
+        case 4:
+            newPos.y = newPos.y + 1;
+            break;
+        default:
+            return;
+    }
+
+    beastMove(pBeast, &newPos, board);
 }
