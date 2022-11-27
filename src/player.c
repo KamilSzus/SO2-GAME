@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include "../headers/player.h"
-#include "../headers/beast.h"
 
 player initPlayer(int i, boardData *board, pid_t serverPID) {
     player p = {0};

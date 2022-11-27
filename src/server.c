@@ -103,9 +103,8 @@ void serverRun(infoServer *server) {
         } else if ((znak == 'B' || znak == 'b') && server->beastNumber < 1) {
             server->beastNumber++;
             beastHunt = 1;
-            beast.isBeastHunt = 1;
             beast = initBeast(server->board);
-            serverAndThread[0].beastInThread = &beast;
+            beast.isBeastHunt = 1;
             serverAndThread[0].beastInThread = &beast;
             serverAndThread[0].infoServer = server;
             pthread_create(&beast_thr, NULL, beastConnection, &serverAndThread[0]);
@@ -132,8 +131,6 @@ void serverRun(infoServer *server) {
             } else {
                 serverAndThread[0].beastInThread->bushTimer--;
             }
-
-
         }
 
         killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
@@ -272,18 +269,18 @@ void *playerConnection(void *playerStruct) {
 void *beastConnection(void *beastStruct) {
     serverAndThread *pServerAndThread = (serverAndThread *) beastStruct;
     beast *pBeast = (beast *) pServerAndThread->beastInThread;
+    boardData *data = pServerAndThread->infoServer->board;
 
-    point newPos;
-    while (1) {
-        if (pServerAndThread->beastInThread->isBeastMoved == 0) {
-            if (beastPull(pBeast, &newPos, pServerAndThread->infoServer->board) == 0) {
-                beastMove(pBeast, &newPos, pServerAndThread->infoServer->board);
+    point newPos = {0};
+    while (pBeast->isBeastHunt) {
+        if (pBeast->isBeastMoved == 0) {
+            if (beastPull(pBeast, &newPos, data) == 0) {
+                beastMove(pBeast, &newPos, data);
             } else {
-                beastRandomMove(pBeast, pServerAndThread->infoServer->board);
+                beastRandomMove(pBeast, data);
             }
         }
     }
-
 }
 
 int keyFunc(void) {

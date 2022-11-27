@@ -6,7 +6,6 @@
 #include "../headers/beast.h"
 
 beast initBeast(boardData *board) {
-
     beast beast = {0};
 
     sem_init(&beast.receivedData, 0, 0);
@@ -21,7 +20,7 @@ beast initBeast(boardData *board) {
     randomBeastSpawn(&beast, board);
     mapFragmentBeast(board, beast.spawnLocation, &beast);
     beast.pos = beast.spawnLocation;
-    beast.isBeastMoved = 1;
+    beast.isBeastMoved = 0;
     beast.wasInBush = 0;
     beast.isBestOnCoin = 0;
     beast.isBestOnSmallTreasure = 0;
