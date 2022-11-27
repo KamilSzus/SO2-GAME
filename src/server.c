@@ -110,8 +110,10 @@ void serverRun(infoServer *server) {
             pthread_create(&beast_thr, NULL, beastConnection, &serverAndThread[0]);
         }
 
-        nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
+        //nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
+        sleep(1);
         server->roundNumber++;
+
         for (int i = 1; i <= 2; i++) {
             if (serverAndThread[i].playerInThread->bushTimer == 0) {
                 serverAndThread[i].playerInThread->isPlayerMoved = 0;
@@ -120,13 +122,15 @@ void serverRun(infoServer *server) {
             }
             serverAndThread[i].playerInThread->roundNumber = server->roundNumber;
         }
-
-        killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
-                   serverAndThread[1].infoServer->board);
         if (beastHunt == 1) {
             mapFragmentBeast(serverAndThread[0].infoServer->board, serverAndThread[0].beastInThread->pos,
                              serverAndThread[0].beastInThread);
+            serverAndThread[0].beastInThread->isBeastMoved = 0;
         }
+
+        killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
+                   serverAndThread[0].beastInThread, serverAndThread[1].infoServer->board);
+
 
         werase(okno1);
         box(okno1, 0, 0);
@@ -259,11 +263,13 @@ void *playerConnection(void *playerStruct) {
 void *beastConnection(void *beastStruct) {
     serverAndThread *pServerAndThread = (serverAndThread *) beastStruct;
     beast *pBeast = (beast *) pServerAndThread->beastInThread;
+
     point newPos;
     while (1) {
-        if (beastPull(pBeast, &newPos) == 0) {
-            beastMove(pBeast, &newPos, pServerAndThread->infoServer->board);
-            break;
+        if(pServerAndThread->beastInThread->isBeastMoved==0) {
+            if (beastPull(pBeast, &newPos, pServerAndThread->infoServer->board) == 0) {
+                beastMove(pBeast, &newPos, pServerAndThread->infoServer->board);
+            }
         }
     }
 

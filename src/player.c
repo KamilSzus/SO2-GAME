@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include "../headers/player.h"
+#include "../headers/beast.h"
 
 player initPlayer(int i, boardData *board, pid_t serverPID) {
     player p = {0};
@@ -169,7 +170,7 @@ void depositGold(player *player) {
     player->coinsCarried = 0;
 }
 
-void killPlayer(player *playerOne, player *playerTwo, boardData *map) {
+void killPlayer(player *playerOne, player *playerTwo, beast *pBeast, boardData *map) {
     if (playerOne->pos.x == playerTwo->pos.x && playerOne->pos.y == playerTwo->pos.y) {
         point col = playerOne->pos;
         playerOne->pos = playerOne->spawnLocation;
@@ -196,6 +197,31 @@ void killPlayer(player *playerOne, player *playerTwo, boardData *map) {
             map->droppedCoins[map->lastIndexArray] = dc;
             map->lastIndexArray++;
         }
+    }
+    if (pBeast != NULL) {
+        if (playerOne->pos.x == pBeast->pos.x && playerOne->pos.y == pBeast->pos.y) {
+            playerOne->pos = playerOne->spawnLocation;
+            mapFragment(map, playerOne->spawnLocation, playerOne);
+            *(map->map + playerOne->spawnLocation.y * map->width + playerOne->spawnLocation.x) = playerOne->ID + '0';
 
+            if (playerOne->coinsCarried != 0) {
+
+            }
+
+            playerOne->coinsCarried = 0;
+            playerOne->deaths++;
+        }
+        if (playerTwo->pos.x == pBeast->pos.x && playerTwo->pos.y == pBeast->pos.y) {
+            playerTwo->pos = playerTwo->spawnLocation;
+            mapFragment(map, playerTwo->spawnLocation, playerTwo);
+            *(map->map + playerTwo->spawnLocation.y * map->width + playerTwo->spawnLocation.x) = playerTwo->ID + '0';
+
+            if (playerTwo->coinsCarried != 0) {
+
+            }
+
+            playerTwo->coinsCarried = 0;
+            playerTwo->deaths++;
+        }
     }
 }

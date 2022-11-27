@@ -8,6 +8,7 @@
 #include <semaphore.h>
 #include "point.h"
 #include "board.h"
+#include "beast.h"
 #include <stdio.h>
 
 typedef struct player {
@@ -47,6 +48,6 @@ void addLargeTreasure(player *player);
 
 void depositGold(player *player);
 
-void killPlayer(player *playerOne, player *playerTwo, boardData *map);
+void killPlayer(player *playerOne, player *playerTwo, beast *pBeast, boardData *map);
 
 #endif //SO2_PLAYER_H

@@ -9,20 +9,20 @@ beast initBeast(boardData *board) {
 
     beast beast = {0};
 
-    sem_init(&beast.received_data, 0, 0);
-    sem_init(&beast.map_calculated, 0, 0);
+    sem_init(&beast.receivedData, 0, 0);
 
 
-    beast.world_size.y = board->height;
-    beast.world_size.x = board->width;
+    beast.worldSize.y = board->height;
+    beast.worldSize.x = board->width;
 
     point camp;
     camp.x = board->width;
     camp.y = board->height;
     beast.isBeastHunt = 0;
     randomBeastSpawn(&beast, board);
-    mapFragmentBeast(board, beast.spawn_location, &beast);
-    beast.pos = beast.spawn_location;
+    mapFragmentBeast(board, beast.spawnLocation, &beast);
+    beast.pos = beast.spawnLocation;
+    beast.isBeastMoved = 1;
 
     return beast;
 }
@@ -59,18 +59,18 @@ void randomBeastSpawn(beast *pBeast, boardData *board) {
 
     point spawn;
     while (1) {
-        spawn.x = rand() % (pBeast->world_size.x - 1) + 1;
-        spawn.y = rand() % (pBeast->world_size.y - 1) + 1;
+        spawn.x = rand() % (pBeast->worldSize.x - 1) + 1;
+        spawn.y = rand() % (pBeast->worldSize.y - 1) + 1;
         if (*(board->map + spawn.y * board->width + spawn.x) == ' ') {
             *(board->map + spawn.y * board->width + spawn.x) = '*';
             break;
         }
     }
 
-    pBeast->spawn_location = spawn;
+    pBeast->spawnLocation = spawn;
 }
 
-int beastPull(beast *pBeast, point *newPosition) {
+int beastPull(beast *pBeast, point *newPosition, boardData *map) {
     //..1..
     //.....
     //..*..
@@ -80,8 +80,8 @@ int beastPull(beast *pBeast, point *newPosition) {
         return 2;
     }
     //up
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x];
         //map->map[newPosition.y * map->width + newPosition.x]
 
         if (temp == '@') {
@@ -95,8 +95,8 @@ int beastPull(beast *pBeast, point *newPosition) {
     }
 
     //down
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y + i) * 5 + pBeast->pos.x];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y + i) * map->width + pBeast->pos.x];
 
         if (temp == '@') {
             break;
@@ -109,8 +109,8 @@ int beastPull(beast *pBeast, point *newPosition) {
     }
 
     //left
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[pBeast->pos.y * 5 + pBeast->pos.x - i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[pBeast->pos.y * map->width + pBeast->pos.x - i];
 
         if (temp == '@') {
             break;
@@ -123,8 +123,8 @@ int beastPull(beast *pBeast, point *newPosition) {
     }
 
     //right
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[pBeast->pos.y * 5 + pBeast->pos.x + i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[pBeast->pos.y * map->width + pBeast->pos.x + i];
         if (temp == '@') {
             break;
         }
@@ -136,8 +136,8 @@ int beastPull(beast *pBeast, point *newPosition) {
     }
 
     //rightUp
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x + i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x + i];
 
         if (temp == '@') {
             break;
@@ -150,8 +150,8 @@ int beastPull(beast *pBeast, point *newPosition) {
     }
 
     //leftUp
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x - i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x - i];
 
         if (temp == '@') {
             break;
@@ -164,8 +164,8 @@ int beastPull(beast *pBeast, point *newPosition) {
     }
 
     //rightDown
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x + i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x + i];
 
         if (temp == '@') {
             break;
@@ -178,8 +178,8 @@ int beastPull(beast *pBeast, point *newPosition) {
     }
 
     //leftDown
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y + i) * 5 + pBeast->pos.x - i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y + i) * map->width + pBeast->pos.x - i];
 
         if (temp == '@') {
             break;
@@ -195,9 +195,10 @@ int beastPull(beast *pBeast, point *newPosition) {
 }
 
 void beastMove(beast *beastStruct, point *newPos, boardData *map) {
-
-    map->map[newPos->y * map->width + newPos->x] = '*';
-    map->map[newPos->y * map->width + newPos->x] = ' ';
-    beastStruct->pos = *newPos;
-
+    if(beastStruct->isBeastMoved == 0) {
+        map->map[newPos->y * map->width + newPos->x] = '*';
+        map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = ' ';
+        beastStruct->pos = *newPos;
+        beastStruct->isBeastMoved = 1;
+    }
 }
