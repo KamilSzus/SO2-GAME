@@ -21,7 +21,7 @@ typedef struct infoServer {
     int treasureNumber;
     int beastNumber;
     int roundNumber;
-    pid_t server_PID;//id prorocesu
+    pid_t serverPid;//id prorocesu
     boardData *board;
     pthread_mutex_t mutex;
     sem_t update;
@@ -58,7 +58,7 @@ void serverInfoPrintPlayers(int y, int x, int i, WINDOW *window, player player);
 
 void printLegend(int y, int x, WINDOW *window);
 
-void *player_connection(void *player_struct);
+void *playerConnection(void *player_struct);
 
 void *beastConnection(void *beastStruct);
 

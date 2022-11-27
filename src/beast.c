@@ -82,6 +82,7 @@ int beastPull(beast *pBeast, point *newPosition) {
     //up
     for (int i = 1; i <= 2; ++i) {
         char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x];
+        //map->map[newPosition.y * map->width + newPosition.x]
 
         if (temp == '@') {
             break;
@@ -124,7 +125,6 @@ int beastPull(beast *pBeast, point *newPosition) {
     //right
     for (int i = 1; i <= 2; ++i) {
         char temp = pBeast->map[pBeast->pos.y * 5 + pBeast->pos.x + i];
-
         if (temp == '@') {
             break;
         }

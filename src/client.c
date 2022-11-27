@@ -89,8 +89,8 @@ void connectToServer() {
 
                 join_shm->move = keyInfo.key;
                 keyInfo.key = 0;
-                sem_wait(&join_shm->received_data);
-                sem_post(&join_shm->received_data);
+                sem_wait(&join_shm->receivedData);
+                sem_post(&join_shm->receivedData);
                 sem_post(sem);
                 werase(okno1);
                 box(okno1, 0, 0);
@@ -141,9 +141,9 @@ void connectToServer() {
                 join_shmPlayer2->move = keyInfo.key;
                 keyInfo.key = 0;
                 //  mvwprintw(okno1, 25, 25, "TU DZIALA");
-                sem_wait(&join_shmPlayer2->received_data);
+                sem_wait(&join_shmPlayer2->receivedData);
                 // mvwprintw(okno1, 25, 25, "TU NIE DZIALA");
-                sem_post(&join_shmPlayer2->received_data);
+                sem_post(&join_shmPlayer2->receivedData);
                 sem_post(semPlayer2);
                 // mvwprintw(okno1, 25, 25, "JAKIM CUDEM");
                 werase(okno1);
@@ -204,7 +204,7 @@ void clientInfoPrintPlayers(int y, int x, int i, WINDOW *window, player player) 
 }
 
 void clientInfoPrintServer(int y, int x, WINDOW *window, player player) {
-    mvwprintw(window, y++, x, "Server's: %d", player.server_PID);
+    mvwprintw(window, y++, x, "Server's: %d", player.serverPid);
     mvwprintw(window, y++, x + 1, "Campsite X/Y: unknown");
     mvwprintw(window, y++, x + 1, "Round number: %d", player.roundNumber);
     y++;
