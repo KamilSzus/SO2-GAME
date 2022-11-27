@@ -8,6 +8,7 @@
 #include "../headers/client.h"
 #include "../headers/server.h"
 #include <pthread.h>
+#include <errno.h>
 
 
 void connectToServer() {
@@ -57,11 +58,17 @@ void connectToServer() {
             wrefresh(okno1);
             sem_t *sem = sem_open("/msg_signalPlayer1", 0);
             if (sem == SEM_FAILED) {
+                mvwprintw(okno1, 25, 25, "%s", strerror(errno));
+                wrefresh(okno1);
+                sleep(60);
                 return;
             }
 
-            int fd = shm_open("/gameSO2_Join_SHMPlayer1", O_RDWR, 0600);
+            int fd = shm_open("/gameSO2_Join_SHMPlayer1", O_CREAT | O_RDWR, 0600);
             if (fd == -1) {
+                mvwprintw(okno1, 25, 25, "%s", strerror(errno));
+                wrefresh(okno1);
+                sleep(60);
                 return;
             }
 
@@ -85,6 +92,8 @@ void connectToServer() {
                 sem_wait(&join_shm->received_data);
                 sem_post(&join_shm->received_data);
                 sem_post(sem);
+                werase(okno1);
+                box(okno1, 0, 0);
                 flushinp();
             } while (join_shm->move != 'q' && join_shm->move != 'Q');
 
@@ -101,11 +110,15 @@ void connectToServer() {
 
             sem_t *semPlayer2 = sem_open("/msg_signalPlayer2", 0);
             if (semPlayer2 == SEM_FAILED) {
+                mvwprintw(okno1, 25, 25, "%s", strerror(errno));
+                wrefresh(okno1);
                 return;
             }
 
-            int fdPlayer2 = shm_open("/gameSO2_Join_SHMPlayer2", O_RDWR, 0600);
+            int fdPlayer2 = shm_open("/gameSO2_Join_SHMPlayer2", O_CREAT | O_RDWR, 0600);
             if (fdPlayer2 == -1) {
+                mvwprintw(okno1, 25, 25, "%s", strerror(errno));
+                wrefresh(okno1);
                 return;
             }
 
@@ -127,9 +140,14 @@ void connectToServer() {
 
                 join_shmPlayer2->move = keyInfo.key;
                 keyInfo.key = 0;
+                //  mvwprintw(okno1, 25, 25, "TU DZIALA");
                 sem_wait(&join_shmPlayer2->received_data);
+                // mvwprintw(okno1, 25, 25, "TU NIE DZIALA");
                 sem_post(&join_shmPlayer2->received_data);
                 sem_post(semPlayer2);
+                // mvwprintw(okno1, 25, 25, "JAKIM CUDEM");
+                werase(okno1);
+                box(okno1, 0, 0);
                 flushinp();
             } while (join_shmPlayer2->move != 'q' && join_shmPlayer2->move != 'Q');
 
@@ -144,10 +162,10 @@ void connectToServer() {
             return;
     }
 
-    munmap(playerAuthentication, sizeof(authentication));
-    shm_unlink("/AuthenticationSHM");
-    close(fdAuthentication);
-    sem_close(semAuthentication);
+    //munmap(playerAuthentication, sizeof(authentication));
+    //shm_unlink("/AuthenticationSHM");
+    //close(fdAuthentication);
+    //sem_close(semAuthentication);
 
 }
 

@@ -11,7 +11,6 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     sprintf(p.name, "Player%d", i);
 
     sem_init(&p.received_data, 0, 0);
-    sem_init(&p.map_calculated, 0, 0);
 
     p.ID = i;
 
@@ -168,13 +167,6 @@ void addLargeTreasure(player *player) {
 void depositGold(player *player) {
     player->coinsInDeposit = player->coinsCarried;
     player->coinsCarried = 0;
-}
-
-void dropGoldAfterDeath(player *player, boardData *map) {
-    if (player->isDeath == 1) {
-        map->map[player->pos.y * map->width + player->pos.x] = 'D';
-        randomPlayerSpawn(player, map);
-    }
 }
 
 void killPlayer(player *playerOne, player *playerTwo, boardData *map) {
