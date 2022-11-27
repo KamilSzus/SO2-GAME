@@ -45,6 +45,7 @@ typedef struct serverAndThread {
     infoServer *infoServer;
     player *playerInThread;
     beast *beastInThread;
+    pthread_mutex_t mutex;
 } serverAndThread;
 
 infoServer *serverInit();
@@ -68,5 +69,9 @@ void *keyboardInputFunc(void *pkey);
 void *maintainServer(void *pServer);
 
 void *authenticationThreadFunc(void *pServer);
+
+void *reConnectPlayerOne(void *pServer);
+
+void *reConnectPlayerTwo(void *pServer);
 
 #endif //SO2_SERVER_H

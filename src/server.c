@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "../headers/server.h"
+#include <errno.h>
 
 infoServer *serverInit() {
 
@@ -37,6 +38,9 @@ void serverRun(infoServer *server) {
         serverAndThread[i].infoServer = server;
         serverAndThread[i].id = i;
         serverAndThread[i].playerInThread = &players[i];
+        if (pthread_mutex_init(&serverAndThread[i].mutex, NULL) != 0) {
+            return;
+        }
         pthread_create(&player_thr[i], NULL, player_connection, &serverAndThread[i]);
     }
 
@@ -55,7 +59,7 @@ void serverRun(infoServer *server) {
     wrefresh(okno1);
 
     pthread_t authenticationThread;
-    pthread_create(&authenticationThread, NULL, authenticationThreadFunc, NULL);
+    pthread_create(&authenticationThread, NULL, authenticationThreadFunc, &serverAndThread[1]);
 
     beast beast;
     pthread_t beast_thr;
@@ -182,6 +186,7 @@ void *player_connection(void *playerStruct) {
 
     sem_t *sem = sem_open(semaforName, O_CREAT, 0600, 0);//semafor tworzy plik
     if (sem == SEM_FAILED) {
+        printf("%s\n", strerror(errno));
         return NULL;
     }
 
@@ -203,7 +208,6 @@ void *player_connection(void *playerStruct) {
         pServerAndThread->infoServer->isPlayerOneConnected = 1;
     } else if (pServerAndThread->id == 2) {
         pServerAndThread->infoServer->isPlayerTwoConnected = 1;
-
     }
 
     while (SHPlayer->move != 'q') {
@@ -216,19 +220,40 @@ void *player_connection(void *playerStruct) {
         memcpy(SHPlayer, pPlayer, sizeof(player));
         sem_post(&SHPlayer->received_data);
     }
-    pServerAndThread->infoServer->playersNumber--;
-
-    if (pServerAndThread->id == 1) {
-        pServerAndThread->infoServer->isPlayerOneConnected = 0;
-    } else if (pServerAndThread->id == 2) {
-        pServerAndThread->infoServer->isPlayerTwoConnected = 0;
-
-    }
 
     munmap(SHPlayer, sizeof(player));
     close(fd);
     shm_unlink(shmName);
-    sem_close(sem);
+    sem_destroy(sem);
+
+    pthread_t player_thr;
+    pthread_t authenticationThread;
+
+
+    if (pServerAndThread->id == 1) {
+        pServerAndThread->infoServer->isPlayerOneConnected = 0;
+
+        pthread_create(&authenticationThread, NULL, reConnectPlayerOne, NULL);
+        pthread_join(authenticationThread, NULL);
+
+        sem_init(&pServerAndThread->playerInThread->received_data, 0, 0);
+        pServerAndThread->playerInThread->move = 0;
+        pthread_create(&player_thr, NULL, player_connection, pServerAndThread);
+        pthread_join(player_thr, NULL);
+
+
+    } else if (pServerAndThread->id == 2) {
+        pServerAndThread->infoServer->isPlayerTwoConnected = 0;
+
+        pthread_create(&authenticationThread, NULL, reConnectPlayerTwo, NULL);
+        pthread_join(authenticationThread, NULL);
+        pServerAndThread->playerInThread->move = 0;
+
+        sem_init(&pServerAndThread->playerInThread->received_data, 0, 0);
+        pthread_create(&player_thr, NULL, player_connection, pServerAndThread);
+        pthread_join(player_thr, NULL);
+    }
+
 }
 
 void *beastConnection(void *beastStruct) {
@@ -278,9 +303,10 @@ void *authenticationThreadFunc(void *pServer) {
 
     sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
     if (sem == SEM_FAILED) {
+        printf("%s\n", strerror(errno));
         return NULL;
     }
-    int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600);
     ftruncate(fd, sizeof(authentication));
     authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
                                                                     PROT_READ | PROT_WRITE,
@@ -298,4 +324,66 @@ void *authenticationThreadFunc(void *pServer) {
 
         sem_post(&playersAuthentication->authenticationPost);
     }
+
+    sem_close(sem);
+    close(fd);
+    shm_unlink("AuthenticationSHM");
+    munmap(playersAuthentication, sizeof(authentication));
+}
+
+void *reConnectPlayerOne(void *pServer) {
+
+    sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);
+    if (sem == SEM_FAILED) {
+        printf("%s\n", strerror(errno));
+        return NULL;
+    }
+    int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    ftruncate(fd, sizeof(authentication));
+    authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
+                                                                    PROT_READ | PROT_WRITE,
+                                                                    MAP_SHARED, fd, 0);
+    assert (playersAuthentication != MAP_FAILED);
+
+    playersAuthentication->playerNumber = 1;
+    sem_init(&playersAuthentication->authenticationPost, 1, 1);
+
+    sem_wait(sem);
+    sem_wait(&playersAuthentication->authenticationPost);
+
+    sem_post(&playersAuthentication->authenticationPost);
+
+    sem_close(sem);
+    close(fd);
+    shm_unlink("AuthenticationSHM");
+    munmap(playersAuthentication, sizeof(authentication));
+}
+
+void *reConnectPlayerTwo(void *pServer) {
+
+    sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
+    if (sem == SEM_FAILED) {
+        printf("%s\n", strerror(errno));
+        return NULL;
+    }
+    int fd = shm_open("AuthenticationSHM", O_CREAT | O_RDWR, 0600); //zwraca id shm
+    ftruncate(fd, sizeof(authentication));
+    authentication *playersAuthentication = (authentication *) mmap(NULL, sizeof(authentication),
+                                                                    PROT_READ | PROT_WRITE,
+                                                                    MAP_SHARED, fd, 0);
+    assert (playersAuthentication != MAP_FAILED);
+
+    playersAuthentication->playerNumber = 2;
+    sem_init(&playersAuthentication->authenticationPost, 1, 1);
+
+    sem_wait(sem);
+    sem_wait(&playersAuthentication->authenticationPost);
+
+
+    sem_post(&playersAuthentication->authenticationPost);
+
+    sem_close(sem);
+    close(fd);
+    shm_unlink("AuthenticationSHM");
+    munmap(playersAuthentication, sizeof(authentication));
 }
