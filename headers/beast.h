@@ -40,5 +40,6 @@ void beastMove(beast *beastStruct, point *newPos, boardData *map);
 
 void beastRandomMove(beast *pBeast, boardData *board);
 
+void bestMovePull(beast *beastStruct, point *newPos, boardData *map);
 
 #endif //SO2_BEAST_H

@@ -110,8 +110,8 @@ void serverRun(infoServer *server) {
             pthread_create(&beast_thr, NULL, beastConnection, &serverAndThread[0]);
         }
 
-        //nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
-        sleep(1);
+        nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
+        //sleep(1);
         server->roundNumber++;
 
         for (int i = 1; i <= 2; i++) {
@@ -125,7 +125,6 @@ void serverRun(infoServer *server) {
         if (beastHunt == 1) {
             mapFragmentBeast(serverAndThread[0].infoServer->board, serverAndThread[0].beastInThread->pos,
                              serverAndThread[0].beastInThread);
-
             if (serverAndThread[0].beastInThread->bushTimer == 0) {
                 serverAndThread[0].beastInThread->isBeastMoved = 0;
             } else {
@@ -136,7 +135,6 @@ void serverRun(infoServer *server) {
         killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
                    serverAndThread[0].beastInThread, serverAndThread[1].infoServer->board);
         //dodac jak oboje sa w camp
-
 
         werase(okno1);
         box(okno1, 0, 0);
@@ -275,7 +273,6 @@ void *beastConnection(void *beastStruct) {
     while (pBeast->isBeastHunt) {
         if (pBeast->isBeastMoved == 0) {
             if (beastPull(pBeast, &newPos, data) == 0) {
-                beastMove(pBeast, &newPos, data);
             } else {
                 beastRandomMove(pBeast, data);
             }
@@ -311,7 +308,6 @@ void *keyboardInputFunc(void *pKey) {
 }
 
 void *authenticationThreadFunc(void *pServer) {
-
     sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
     if (sem == SEM_FAILED) {
         printf("%s\n", strerror(errno));

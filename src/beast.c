@@ -96,6 +96,12 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x;
+            toMove.y = pBeast->pos.y - 1;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -110,6 +116,12 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x;
             newPosition->y = pBeast->pos.y + i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x;
+            toMove.y = pBeast->pos.y + 1;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -124,6 +136,13 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
+
             return 0;
         }
     }
@@ -137,6 +156,12 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x + 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -151,6 +176,12 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -165,6 +196,12 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -179,6 +216,12 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x + 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -193,6 +236,12 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y + i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -202,6 +251,16 @@ int beastPull(beast *pBeast, point *newPosition, boardData *map) {
 
 void beastMove(beast *beastStruct, point *newPos, boardData *map) {
     if (beastStruct->isBeastMoved == 0) {
+        //32 - 30
+        //if (newPos->x - beastStruct->pos.x > 1) {
+        //    newPos->x--;
+        //} else if (newPos->x - beastStruct->pos.x < 1) {//28 - 30
+        //    newPos->x++;
+        //} else if (newPos->y - beastStruct->pos.y > 1) {//32 - 30
+        //    newPos->y--;
+        //} else if (newPos->y - beastStruct->pos.y < 1) {//28 - 30
+        //    newPos->y++;
+        //}
 
         if (beastStruct->isBestOnCoin == 1) {
             map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'c';
@@ -279,4 +338,16 @@ void beastRandomMove(beast *pBeast, boardData *board) {
     }
 
     beastMove(pBeast, &newPos, board);
+}
+
+void bestMovePull(beast *beastStruct, point *newPos, boardData *map) {
+    if (newPos->x - beastStruct->pos.x > 1) {
+        newPos->x--;
+    } else if (newPos->x - beastStruct->pos.x < 1) {//28 - 30
+        newPos->x++;
+    } else if (newPos->y - beastStruct->pos.y > 1) {//32 - 30
+        newPos->y--;
+    } else if (newPos->y - beastStruct->pos.y < 1) {//28 - 30
+        newPos->y++;
+    }
 }
