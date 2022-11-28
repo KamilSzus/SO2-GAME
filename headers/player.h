@@ -8,19 +8,20 @@
 #include <semaphore.h>
 #include "point.h"
 #include "board.h"
+#include "beast.h"
 #include <stdio.h>
 
 typedef struct player {
-    sem_t received_data;
+    sem_t receivedData;
     char name[8];
-    point world_size;
-    point spawn_location;
+    point worldSize;
+    point spawnLocation;
     point pos;
     int roundNumber;
     int bushTimer;
     int ID;
     pid_t playerPID;
-    pid_t server_PID;
+    pid_t serverPid;
     int deaths;
     int coinsCarried;
     int coinsInDeposit;
@@ -47,6 +48,6 @@ void addLargeTreasure(player *player);
 
 void depositGold(player *player);
 
-void killPlayer(player *playerOne, player *playerTwo, boardData *map);
+void killPlayer(player *playerOne, player *playerTwo, beast *pBeast, boardData *map);
 
 #endif //SO2_PLAYER_H

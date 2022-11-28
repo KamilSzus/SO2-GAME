@@ -11,13 +11,20 @@
 #include <stdio.h>
 
 typedef struct beast {
-    sem_t received_data;
-    sem_t map_calculated;
-    point world_size;
-    point spawn_location;
+    sem_t receivedData;
+    point worldSize;
+    point spawnLocation;
     point pos;
     int isBeastHunt;
+    int isBeastMoved;
+    int wasInBush;
+    int isBestOnCoin;
+    int isBestOnSmallTreasure;
+    int isBestOnLargeTreasure;
+    int isBestOnCampsite;
+    int isBestOnDrop;
     char map[25];
+    int bushTimer;
 } beast;
 
 
@@ -27,9 +34,12 @@ void randomBeastSpawn(beast *pBeast, boardData *board);
 
 void mapFragmentBeast(boardData *board, point point, beast *pBeast);
 
-int beastPull(beast *pBeast, point *newPosition);
+int beastPull(beast *pBeast, point *newPosition, boardData *map);
 
 void beastMove(beast *beastStruct, point *newPos, boardData *map);
 
+void beastRandomMove(beast *pBeast, boardData *board);
+
+void bestMovePull(beast *beastStruct, point *newPos, boardData *map);
 
 #endif //SO2_BEAST_H

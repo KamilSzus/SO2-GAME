@@ -10,7 +10,7 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
 
     sprintf(p.name, "Player%d", i);
 
-    sem_init(&p.received_data, 0, 0);
+    sem_init(&p.receivedData, 0, 0);
 
     p.ID = i;
 
@@ -18,14 +18,14 @@ player initPlayer(int i, boardData *board, pid_t serverPID) {
     worldSize.x = board->width;
     worldSize.y = board->height;
 
-    p.world_size = worldSize;
+    p.worldSize = worldSize;
     p.coinsInDeposit = 0;
     p.coinsCarried = 0;
 
-    p.server_PID = serverPID;
+    p.serverPid = serverPID;
     randomPlayerSpawn(&p, board);
-    mapFragment(board, p.spawn_location, &p);
-    p.pos = p.spawn_location;
+    mapFragment(board, p.spawnLocation, &p);
+    p.pos = p.spawnLocation;
     p.isPlayerMoved = 0;
     p.bushTimer = 0;
     p.wasInBush = 0;
@@ -40,15 +40,15 @@ void randomPlayerSpawn(player *player, boardData *board) {
 
     point spawn;
     while (1) {
-        spawn.x = rand() % (player->world_size.x - 1) + 1;
-        spawn.y = rand() % (player->world_size.y - 1) + 1;
+        spawn.x = rand() % (player->worldSize.x - 1) + 1;
+        spawn.y = rand() % (player->worldSize.y - 1) + 1;
         if (*(board->map + spawn.y * board->width + spawn.x) == ' ') {
             *(board->map + spawn.y * board->width + spawn.x) = player->ID + '0';
             break;
         }
     }
 
-    player->spawn_location = spawn;
+    player->spawnLocation = spawn;
 
 }
 
@@ -96,10 +96,10 @@ void movePlayer(boardData *map, player *player) {
     } else if (player->move == 67) {//right
         newPosition.y = player->pos.y;
         newPosition.x = player->pos.x + 1;
-    } else if (player->move == 65) {//down
+    } else if (player->move == 65) {//up
         newPosition.y = player->pos.y - 1;
         newPosition.x = player->pos.x;
-    } else if (player->move == 66) {//up
+    } else if (player->move == 66) {//down
         newPosition.y = player->pos.y + 1;
         newPosition.x = player->pos.x;
     }
@@ -169,16 +169,16 @@ void depositGold(player *player) {
     player->coinsCarried = 0;
 }
 
-void killPlayer(player *playerOne, player *playerTwo, boardData *map) {
+void killPlayer(player *playerOne, player *playerTwo, beast *pBeast, boardData *map) {
     if (playerOne->pos.x == playerTwo->pos.x && playerOne->pos.y == playerTwo->pos.y) {
         point col = playerOne->pos;
-        playerOne->pos = playerOne->spawn_location;
-        playerTwo->pos = playerTwo->spawn_location;
+        playerOne->pos = playerOne->spawnLocation;
+        playerTwo->pos = playerTwo->spawnLocation;
 
-        mapFragment(map, playerOne->spawn_location, playerOne);
-        *(map->map + playerOne->spawn_location.y * map->width + playerOne->spawn_location.x) = playerOne->ID + '0';
-        mapFragment(map, playerTwo->spawn_location, playerTwo);
-        *(map->map + playerTwo->spawn_location.y * map->width + playerTwo->spawn_location.x) = playerTwo->ID + '0';
+        mapFragment(map, playerOne->spawnLocation, playerOne);
+        *(map->map + playerOne->spawnLocation.y * map->width + playerOne->spawnLocation.x) = playerOne->ID + '0';
+        mapFragment(map, playerTwo->spawnLocation, playerTwo);
+        *(map->map + playerTwo->spawnLocation.y * map->width + playerTwo->spawnLocation.x) = playerTwo->ID + '0';
 
         int possibleValue = playerOne->coinsCarried + playerTwo->coinsCarried;
 
@@ -196,6 +196,31 @@ void killPlayer(player *playerOne, player *playerTwo, boardData *map) {
             map->droppedCoins[map->lastIndexArray] = dc;
             map->lastIndexArray++;
         }
+    }
+    if (pBeast != NULL) {
+        if (playerOne->pos.x == pBeast->pos.x && playerOne->pos.y == pBeast->pos.y) {
+            playerOne->pos = playerOne->spawnLocation;
+            mapFragment(map, playerOne->spawnLocation, playerOne);
+            *(map->map + playerOne->spawnLocation.y * map->width + playerOne->spawnLocation.x) = playerOne->ID + '0';
 
+            if (playerOne->coinsCarried != 0) {
+
+            }
+
+            playerOne->coinsCarried = 0;
+            playerOne->deaths++;
+        }
+        if (playerTwo->pos.x == pBeast->pos.x && playerTwo->pos.y == pBeast->pos.y) {
+            playerTwo->pos = playerTwo->spawnLocation;
+            mapFragment(map, playerTwo->spawnLocation, playerTwo);
+            *(map->map + playerTwo->spawnLocation.y * map->width + playerTwo->spawnLocation.x) = playerTwo->ID + '0';
+
+            if (playerTwo->coinsCarried != 0) {
+
+            }
+
+            playerTwo->coinsCarried = 0;
+            playerTwo->deaths++;
+        }
     }
 }

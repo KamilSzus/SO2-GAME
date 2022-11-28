@@ -6,23 +6,28 @@
 #include "../headers/beast.h"
 
 beast initBeast(boardData *board) {
-
     beast beast = {0};
 
-    sem_init(&beast.received_data, 0, 0);
-    sem_init(&beast.map_calculated, 0, 0);
+    sem_init(&beast.receivedData, 0, 0);
 
-
-    beast.world_size.y = board->height;
-    beast.world_size.x = board->width;
+    beast.worldSize.y = board->height;
+    beast.worldSize.x = board->width;
 
     point camp;
     camp.x = board->width;
     camp.y = board->height;
     beast.isBeastHunt = 0;
     randomBeastSpawn(&beast, board);
-    mapFragmentBeast(board, beast.spawn_location, &beast);
-    beast.pos = beast.spawn_location;
+    mapFragmentBeast(board, beast.spawnLocation, &beast);
+    beast.pos = beast.spawnLocation;
+    beast.isBeastMoved = 0;
+    beast.wasInBush = 0;
+    beast.isBestOnCoin = 0;
+    beast.isBestOnSmallTreasure = 0;
+    beast.isBestOnLargeTreasure = 0;
+    beast.isBestOnCampsite = 0;
+    beast.isBestOnDrop = 0;
+    beast.bushTimer = 0;
 
     return beast;
 }
@@ -59,29 +64,31 @@ void randomBeastSpawn(beast *pBeast, boardData *board) {
 
     point spawn;
     while (1) {
-        spawn.x = rand() % (pBeast->world_size.x - 1) + 1;
-        spawn.y = rand() % (pBeast->world_size.y - 1) + 1;
+        spawn.x = rand() % (pBeast->worldSize.x - 1) + 1;
+        spawn.y = rand() % (pBeast->worldSize.y - 1) + 1;
         if (*(board->map + spawn.y * board->width + spawn.x) == ' ') {
             *(board->map + spawn.y * board->width + spawn.x) = '*';
             break;
         }
     }
 
-    pBeast->spawn_location = spawn;
+    pBeast->spawnLocation = spawn;
 }
 
-int beastPull(beast *pBeast, point *newPosition) {
+int beastPull(beast *pBeast, point *newPosition, boardData *map) {
     //..1..
     //.....
     //..*..
     //.....
     //.....
+    //bestia porusza sie o 2
     if (!pBeast) {
         return 2;
     }
     //up
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x];
+        //map->map[newPosition.y * map->width + newPosition.x]
 
         if (temp == '@') {
             break;
@@ -89,13 +96,19 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x;
+            toMove.y = pBeast->pos.y - 1;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
 
     //down
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y + i) * 5 + pBeast->pos.x];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y + i) * map->width + pBeast->pos.x];
 
         if (temp == '@') {
             break;
@@ -103,13 +116,19 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x;
             newPosition->y = pBeast->pos.y + i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x;
+            toMove.y = pBeast->pos.y + 1;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
 
     //left
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[pBeast->pos.y * 5 + pBeast->pos.x - i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[pBeast->pos.y * map->width + pBeast->pos.x - i];
 
         if (temp == '@') {
             break;
@@ -117,27 +136,39 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
+
             return 0;
         }
     }
 
     //right
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[pBeast->pos.y * 5 + pBeast->pos.x + i];
-
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[pBeast->pos.y * map->width + pBeast->pos.x + i];
         if (temp == '@') {
             break;
         }
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x + 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
 
     //rightUp
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x + i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x + i];
 
         if (temp == '@') {
             break;
@@ -145,13 +176,19 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
 
     //leftUp
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x - i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x - i];
 
         if (temp == '@') {
             break;
@@ -159,13 +196,19 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
 
     //rightDown
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y - i) * 5 + pBeast->pos.x + i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y - i) * map->width + pBeast->pos.x + i];
 
         if (temp == '@') {
             break;
@@ -173,13 +216,19 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x + i;
             newPosition->y = pBeast->pos.y - i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x + 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
 
     //leftDown
-    for (int i = 1; i <= 2; ++i) {
-        char temp = pBeast->map[(pBeast->pos.y + i) * 5 + pBeast->pos.x - i];
+    for (int i = 1; i <= 2; i++) {
+        char temp = map->map[(pBeast->pos.y + i) * map->width + pBeast->pos.x - i];
 
         if (temp == '@') {
             break;
@@ -187,6 +236,12 @@ int beastPull(beast *pBeast, point *newPosition) {
         if (temp == '1' || temp == '2') {
             newPosition->x = pBeast->pos.x - i;
             newPosition->y = pBeast->pos.y + i;
+
+            point toMove = { 0 };
+            toMove.x = pBeast->pos.x - 1;
+            toMove.y = pBeast->pos.y;
+            beastMove(pBeast,&toMove,map);
+
             return 0;
         }
     }
@@ -195,9 +250,104 @@ int beastPull(beast *pBeast, point *newPosition) {
 }
 
 void beastMove(beast *beastStruct, point *newPos, boardData *map) {
+    if (beastStruct->isBeastMoved == 0) {
+        //32 - 30
+        //if (newPos->x - beastStruct->pos.x > 1) {
+        //    newPos->x--;
+        //} else if (newPos->x - beastStruct->pos.x < 1) {//28 - 30
+        //    newPos->x++;
+        //} else if (newPos->y - beastStruct->pos.y > 1) {//32 - 30
+        //    newPos->y--;
+        //} else if (newPos->y - beastStruct->pos.y < 1) {//28 - 30
+        //    newPos->y++;
+        //}
 
-    map->map[newPos->y * map->width + newPos->x] = '*';
-    map->map[newPos->y * map->width + newPos->x] = ' ';
-    beastStruct->pos = *newPos;
+        if (beastStruct->isBestOnCoin == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'c';
+            beastStruct->isBestOnCoin = 0;
+        } else if (beastStruct->isBestOnSmallTreasure == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 't';
+            beastStruct->isBestOnSmallTreasure = 0;
+        } else if (beastStruct->isBestOnLargeTreasure == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'T';
+            beastStruct->isBestOnLargeTreasure = 0;
+        } else if (beastStruct->isBestOnCampsite == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'C';
+            beastStruct->isBestOnCampsite = 0;
+        } else if (beastStruct->isBestOnDrop == 1) {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = 'D';
+            beastStruct->isBestOnDrop = 0;
+        }
 
+        if (beastStruct->wasInBush == 1) {
+            if (map->map[newPos->y * map->width + newPos->x] == '@') {
+                return;
+            }
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = '#';
+            beastStruct->wasInBush = 0;
+        }
+
+        if (map->map[newPos->y * map->width + newPos->x] == '@') {
+            return;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'c') {
+            beastStruct->isBestOnCoin = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 't') {
+            beastStruct->isBestOnSmallTreasure = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'T') {
+            beastStruct->isBestOnLargeTreasure = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'C') {
+            beastStruct->isBestOnCampsite = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == '#') {
+            beastStruct->bushTimer = 2;
+            beastStruct->wasInBush = 1;
+        } else if (map->map[newPos->y * map->width + newPos->x] == 'D') {
+            beastStruct->isBestOnDrop = 1;
+        }
+
+        map->map[newPos->y * map->width + newPos->x] = '*';
+        if (map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] != 'C' &&
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] != '#') {
+            map->map[beastStruct->pos.y * map->width + beastStruct->pos.x] = ' ';
+        }
+
+        beastStruct->pos = *newPos;
+        beastStruct->isBeastMoved = 1;
+
+    }
+}
+
+void beastRandomMove(beast *pBeast, boardData *board) {
+    int directory = rand() % (4) + 1;
+    point newPos = pBeast->pos;
+
+    switch (directory) {
+        case 1:
+            newPos.x = newPos.x - 1;
+            break;
+        case 2:
+            newPos.y = newPos.y - 1;
+            break;
+        case 3:
+            newPos.x = newPos.x + 1;
+            break;
+        case 4:
+            newPos.y = newPos.y + 1;
+            break;
+        default:
+            return;
+    }
+
+    beastMove(pBeast, &newPos, board);
+}
+
+void bestMovePull(beast *beastStruct, point *newPos, boardData *map) {
+    if (newPos->x - beastStruct->pos.x > 1) {
+        newPos->x--;
+    } else if (newPos->x - beastStruct->pos.x < 1) {//28 - 30
+        newPos->x++;
+    } else if (newPos->y - beastStruct->pos.y > 1) {//32 - 30
+        newPos->y--;
+    } else if (newPos->y - beastStruct->pos.y < 1) {//28 - 30
+        newPos->y++;
+    }
 }

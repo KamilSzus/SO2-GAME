@@ -7,6 +7,7 @@
 #include "../headers/server.h"
 #include <errno.h>
 
+
 infoServer *serverInit() {
 
     infoServer *server = (infoServer *) calloc(1, sizeof(infoServer));
@@ -15,7 +16,7 @@ infoServer *serverInit() {
     }
 
     server->board = mapLoad("map.txt");
-    server->server_PID = getpid();
+    server->serverPid = getpid();
     server->playersNumber = 0;
     server->beastNumber = 0;
     server->coinNumber = 0;
@@ -34,14 +35,14 @@ void serverRun(infoServer *server) {
     player players[3];
     pthread_t player_thr[3];
     for (int i = 1; i <= 2; i++) {
-        players[i] = initPlayer(i, server->board, server->server_PID);
+        players[i] = initPlayer(i, server->board, server->serverPid);
         serverAndThread[i].infoServer = server;
         serverAndThread[i].id = i;
         serverAndThread[i].playerInThread = &players[i];
         if (pthread_mutex_init(&serverAndThread[i].mutex, NULL) != 0) {
             return;
         }
-        pthread_create(&player_thr[i], NULL, player_connection, &serverAndThread[i]);
+        pthread_create(&player_thr[i], NULL, playerConnection, &serverAndThread[i]);
     }
 
     setlocale(LC_ALL, "");
@@ -102,16 +103,17 @@ void serverRun(infoServer *server) {
         } else if ((znak == 'B' || znak == 'b') && server->beastNumber < 1) {
             server->beastNumber++;
             beastHunt = 1;
-            beast.isBeastHunt = 1;
             beast = initBeast(server->board);
-            serverAndThread[0].beastInThread = &beast;
+            beast.isBeastHunt = 1;
             serverAndThread[0].beastInThread = &beast;
             serverAndThread[0].infoServer = server;
             pthread_create(&beast_thr, NULL, beastConnection, &serverAndThread[0]);
         }
 
         nanosleep((const struct timespec[]) {{0, 200000000L}}, NULL);
+        //sleep(1);
         server->roundNumber++;
+
         for (int i = 1; i <= 2; i++) {
             if (serverAndThread[i].playerInThread->bushTimer == 0) {
                 serverAndThread[i].playerInThread->isPlayerMoved = 0;
@@ -120,13 +122,19 @@ void serverRun(infoServer *server) {
             }
             serverAndThread[i].playerInThread->roundNumber = server->roundNumber;
         }
-
-        killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
-                   serverAndThread[1].infoServer->board);
         if (beastHunt == 1) {
             mapFragmentBeast(serverAndThread[0].infoServer->board, serverAndThread[0].beastInThread->pos,
                              serverAndThread[0].beastInThread);
+            if (serverAndThread[0].beastInThread->bushTimer == 0) {
+                serverAndThread[0].beastInThread->isBeastMoved = 0;
+            } else {
+                serverAndThread[0].beastInThread->bushTimer--;
+            }
         }
+
+        killPlayer(serverAndThread[1].playerInThread, serverAndThread[2].playerInThread,
+                   serverAndThread[0].beastInThread, serverAndThread[1].infoServer->board);
+        //dodac jak oboje sa w camp
 
         werase(okno1);
         box(okno1, 0, 0);
@@ -140,7 +148,7 @@ void serverRun(infoServer *server) {
 }
 
 void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
-    mvwprintw(window, y++, x, "Server's playerPID: %d", Server.server_PID);
+    mvwprintw(window, y++, x, "Server's playerPID: %d", Server.serverPid);
     mvwprintw(window, y++, x + 1, "Campsite X/Y: %d/%d", 21, 10);
     mvwprintw(window, y++, x + 1, "Round number: %d", Server.roundNumber);
     y++;
@@ -176,7 +184,7 @@ void printLegend(int y, int x, WINDOW *window) {
     mvwprintw(window, y - 1, x + 25, "D - dropped treasure ");
 }
 
-void *player_connection(void *playerStruct) {
+void *playerConnection(void *playerStruct) {
     serverAndThread *pServerAndThread = (serverAndThread *) playerStruct;
     player *pPlayer = pServerAndThread->playerInThread;
 
@@ -202,7 +210,7 @@ void *player_connection(void *playerStruct) {
 
     memcpy(SHPlayer, pPlayer, sizeof(player));
 
-    sem_init(&SHPlayer->received_data, 1, 1); // shared, signaled
+    sem_init(&SHPlayer->receivedData, 1, 1); // shared, signaled
 
     if (pServerAndThread->id == 1) {
         pServerAndThread->infoServer->isPlayerOneConnected = 1;
@@ -212,13 +220,13 @@ void *player_connection(void *playerStruct) {
 
     while (SHPlayer->move != 'q') {
         sem_wait(sem);
-        sem_wait(&SHPlayer->received_data);
+        sem_wait(&SHPlayer->receivedData);
         mapFragment(pServerAndThread->infoServer->board, pPlayer->pos, pPlayer);
         pPlayer->move = SHPlayer->move;
         movePlayer(pServerAndThread->infoServer->board, pPlayer);
         //pPlayer->playerPID = SHPlayer->playerPID; czemu to nie dziala
         memcpy(SHPlayer, pPlayer, sizeof(player));
-        sem_post(&SHPlayer->received_data);
+        sem_post(&SHPlayer->receivedData);
     }
 
     munmap(SHPlayer, sizeof(player));
@@ -226,7 +234,7 @@ void *player_connection(void *playerStruct) {
     shm_unlink(shmName);
     sem_destroy(sem);
 
-    pthread_t player_thr;
+    pthread_t playerThr;
     pthread_t authenticationThread;
 
 
@@ -236,10 +244,10 @@ void *player_connection(void *playerStruct) {
         pthread_create(&authenticationThread, NULL, reConnectPlayerOne, NULL);
         pthread_join(authenticationThread, NULL);
 
-        sem_init(&pServerAndThread->playerInThread->received_data, 0, 0);
+        sem_init(&pServerAndThread->playerInThread->receivedData, 0, 0);
         pServerAndThread->playerInThread->move = 0;
-        pthread_create(&player_thr, NULL, player_connection, pServerAndThread);
-        pthread_join(player_thr, NULL);
+        pthread_create(&playerThr, NULL, playerConnection, pServerAndThread);
+        pthread_join(playerThr, NULL);
 
 
     } else if (pServerAndThread->id == 2) {
@@ -249,9 +257,9 @@ void *player_connection(void *playerStruct) {
         pthread_join(authenticationThread, NULL);
         pServerAndThread->playerInThread->move = 0;
 
-        sem_init(&pServerAndThread->playerInThread->received_data, 0, 0);
-        pthread_create(&player_thr, NULL, player_connection, pServerAndThread);
-        pthread_join(player_thr, NULL);
+        sem_init(&pServerAndThread->playerInThread->receivedData, 0, 0);
+        pthread_create(&playerThr, NULL, playerConnection, pServerAndThread);
+        pthread_join(playerThr, NULL);
     }
 
 }
@@ -259,16 +267,17 @@ void *player_connection(void *playerStruct) {
 void *beastConnection(void *beastStruct) {
     serverAndThread *pServerAndThread = (serverAndThread *) beastStruct;
     beast *pBeast = (beast *) pServerAndThread->beastInThread;
-    point newPos;
-    while (1) {
-        printf("%d\n", beastPull(pBeast, &newPos));
-        // if ( == 0) {
-        //     printf("dsadsadasdasdafddddd\n");
-        //     beastMove(pBeast, &newPos,pServerAndThread->infoServer->board);
-        //     //break;
-        // }
-    }
+    boardData *data = pServerAndThread->infoServer->board;
 
+    point newPos = {0};
+    while (pBeast->isBeastHunt) {
+        if (pBeast->isBeastMoved == 0) {
+            if (beastPull(pBeast, &newPos, data) == 0) {
+            } else {
+                beastRandomMove(pBeast, data);
+            }
+        }
+    }
 }
 
 int keyFunc(void) {
@@ -284,7 +293,6 @@ int keyFunc(void) {
 
 void *keyboardInputFunc(void *pKey) {
     keyThreadInfo *info = (keyThreadInfo *) pKey;
-
     int key;
 
     while (info->key != 'q' && info->key != 'Q') {
@@ -300,7 +308,6 @@ void *keyboardInputFunc(void *pKey) {
 }
 
 void *authenticationThreadFunc(void *pServer) {
-
     sem_t *sem = sem_open("Authentication", O_CREAT, 0600, 0);//semafor tworzy plik
     if (sem == SEM_FAILED) {
         printf("%s\n", strerror(errno));
@@ -378,7 +385,6 @@ void *reConnectPlayerTwo(void *pServer) {
 
     sem_wait(sem);
     sem_wait(&playersAuthentication->authenticationPost);
-
 
     sem_post(&playersAuthentication->authenticationPost);
 
