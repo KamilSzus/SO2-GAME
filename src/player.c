@@ -165,7 +165,7 @@ void addLargeTreasure(player *player) {
 }
 
 void depositGold(player *player) {
-    player->coinsInDeposit = player->coinsCarried;
+    player->coinsInDeposit += player->coinsCarried;
     player->coinsCarried = 0;
 }
 

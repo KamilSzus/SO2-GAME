@@ -24,7 +24,6 @@ infoServer *serverInit() {
     server->roundNumber = 0;
     server->isPlayerOneConnected = 0;
     server->isPlayerTwoConnected = 0;
-    sem_init(&server->update, 0, 1);
 
     return server;
 }
@@ -141,6 +140,19 @@ void serverRun(infoServer *server) {
         flushinp();
     } while (znak != 'q' && znak != 'Q');
 
+    if (beastHunt == 1) {
+        serverAndThread[0].beastInThread->isBeastHunt = 0;
+        sem_close(&serverAndThread[0].beastInThread->receivedData);
+        pthread_join(beast_thr, NULL);
+    }
+
+    //for (int i = 1; i < 3; i++) {
+    //    pthread_join(player_thr[i], NULL);
+    //}
+
+    pthread_mutex_destroy(&keyInfo.mutex);
+    pthread_join(keyboardInput, NULL);
+
     endwin();// Koniec pracy z CURSES
     delwin(okno1);        // Usuniecie okien
     mapDestroy(server->board);
@@ -164,7 +176,7 @@ void serverInfoPrintServer(int y, int x, WINDOW *window, infoServer Server) {
 
 void serverInfoPrintPlayers(int y, int x, int i, WINDOW *window, player player) {
     mvwprintw(window, y + 2, x + 15 + (i * 25), "%s", player.name);
-    mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player.playerPID);
+    //mvwprintw(window, y + 3, x + 15 + (i * 25), "%s", player.playerPID);
     mvwprintw(window, y + 4, x + 15 + (i * 25), "HUMAN");
     mvwprintw(window, y + 5, x + 15 + (i * 25), "%d", player.deaths);
     mvwprintw(window, y + 6, x + 15 + (i * 25), "%d/%d", player.pos.x, player.pos.y);
@@ -237,7 +249,6 @@ void *playerConnection(void *playerStruct) {
     pthread_t playerThr;
     pthread_t authenticationThread;
 
-
     if (pServerAndThread->id == 1) {
         pServerAndThread->infoServer->isPlayerOneConnected = 0;
 
@@ -293,7 +304,7 @@ int keyFunc(void) {
 
 void *keyboardInputFunc(void *pKey) {
     keyThreadInfo *info = (keyThreadInfo *) pKey;
-    int key;
+    int key = 0;
 
     while (info->key != 'q' && info->key != 'Q') {
         if (keyFunc()) {

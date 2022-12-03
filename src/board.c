@@ -51,11 +51,6 @@ void mapPrint(int y, int x, WINDOW *window, boardData *map) {
             attroff(COLOR_PAIR(object));
         }
     }
-   // if (map->lastIndexArray != 0) {
-   //     mvwprintw(window, 25, 25, "%d", map->droppedCoins[0].coins);
-   //     mvwprintw(window, 26, 26, "%d %d", map->droppedCoins[0].collisionLocalization.y,
-   //               map->droppedCoins[0].collisionLocalization.x);
-   // }
 }
 
 void mapDestroy(boardData *map) {

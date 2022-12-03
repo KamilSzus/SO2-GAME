@@ -10,10 +10,7 @@
 #include <pthread.h>
 #include <errno.h>
 
-
 void connectToServer() {
-
-
     sem_t *semAuthentication = sem_open("/Authentication", 0);
     if (semAuthentication == SEM_FAILED) {
         return;
@@ -48,10 +45,10 @@ void connectToServer() {
     pthread_t keyboardInput;
     keyThreadInfoPlayer keyInfo;
     keyInfo.key = 0;
-    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
     if (pthread_mutex_init(&keyInfo.mutex, NULL) != 0) {
         return;
     }
+    pthread_create(&keyboardInput, NULL, keyboardInputFuncPlayer, &keyInfo);
 
     switch (playerID) {
         case 1:
@@ -162,10 +159,10 @@ void connectToServer() {
             return;
     }
 
-    //munmap(playerAuthentication, sizeof(authentication));
-    //shm_unlink("/AuthenticationSHM");
-    //close(fdAuthentication);
-    //sem_close(semAuthentication);
+    munmap(playerAuthentication, sizeof(authentication));
+    shm_unlink("/AuthenticationSHM");
+    close(fdAuthentication);
+    sem_close(semAuthentication);
 
 }
 
@@ -182,8 +179,8 @@ int keyFuncPlayer(void) {
 
 void *keyboardInputFuncPlayer(void *pKey) {
     keyThreadInfoPlayer *info = (keyThreadInfoPlayer *) pKey;
-
     int key = 0;
+
     if (keyFuncPlayer()) {
         key = getch();
         pthread_mutex_lock(&info->mutex);
