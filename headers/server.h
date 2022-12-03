@@ -23,8 +23,6 @@ typedef struct infoServer {
     int roundNumber;
     pid_t serverPid;//id prorocesu
     boardData *board;
-    pthread_mutex_t mutex;
-    sem_t update;
     int isPlayerOneConnected;
     int isPlayerTwoConnected;
 
